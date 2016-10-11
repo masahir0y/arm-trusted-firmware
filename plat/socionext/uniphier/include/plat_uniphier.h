@@ -40,9 +40,21 @@ void uniphier_setup_page_tables(uintptr_t total_base,
 				uintptr_t coh_start,
 				uintptr_t coh_limit);
 
+#ifdef UNIPHIER_LD20
 void plat_uniphier_cci_init(void);
 void plat_uniphier_cci_enable(void);
 void plat_uniphier_cci_disable(void);
+#else
+static inline void plat_uniphier_cci_init(void)
+{
+}
+static inline void plat_uniphier_cci_enable(void)
+{
+}
+static inline void plat_uniphier_cci_disable(void)
+{
+}
+#endif
 
 /* GIC */
 void plat_uniphier_gic_driver_init(void);

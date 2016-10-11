@@ -51,8 +51,12 @@ PLAT_BL_COMMON_SOURCES	+=	drivers/console/aarch64/console.S	\
 				$(PLAT_PATH)/uniphier_console.S		\
 				$(PLAT_PATH)/uniphier_helpers.S
 
-BL31_SOURCES		+=	drivers/arm/cci/cci.c			\
-				drivers/arm/gic/common/gic_common.c	\
+ifeq ($(SOC),ld20)
+UNIPHIER_CCI_SOURCES	:=	drivers/arm/cci/cci.c			\
+				$(PLAT_PATH)/uniphier_cci.c
+endif
+
+BL31_SOURCES		+=	drivers/arm/gic/common/gic_common.c	\
 				drivers/arm/gic/v3/gicv3_helpers.c	\
 				drivers/arm/gic/v3/gicv3_main.c		\
 				lib/cpus/aarch64/cortex_a53.S		\
@@ -64,8 +68,8 @@ BL31_SOURCES		+=	drivers/arm/cci/cci.c			\
 				plat/common/plat_gicv3.c		\
 				plat/common/plat_psci_common.c		\
 				$(PLAT_PATH)/uniphier_bl31_setup.c	\
-				$(PLAT_PATH)/uniphier_cci.c		\
 				$(PLAT_PATH)/uniphier_gicv3.c		\
 				$(PLAT_PATH)/uniphier_pm.c		\
 				$(PLAT_PATH)/uniphier_smp.S		\
-				$(PLAT_PATH)/uniphier_topology.c
+				$(PLAT_PATH)/uniphier_topology.c	\
+				$(UNIPHIER_CCI_SOURCES)
