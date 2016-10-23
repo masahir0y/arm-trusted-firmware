@@ -29,114 +29,100 @@
  */
 #include <asm_macros.S>
 
-#define UNIPHIER_UART_RX	0x0	/* In:  Receive buffer */
-#define UNIPHIER_UART_TX	0x0	/* Out: Transmit buffer */
+#define UNIPHIER_UART_RX	0x00	/* In:  Receive buffer */
+#define UNIPHIER_UART_TX	0x00	/* Out: Transmit buffer */
+
+#define UNIPHIER_UART_FCR	0x0c	/* Char/FIFO Control Register */
+#define   UNIPHIER_UART_FCR_ENABLE_FIFO	0x01	/* Enable the FIFO */
 
 #define UNIPHIER_UART_LCR_MCR	0x10	/* Line/Modem Control Register */
 #define   UNIPHIER_UART_LCR_WLEN8	0x03	/* Wordlength: 8 bits */
 #define UNIPHIER_UART_LSR	0x14	/* Line Status Register */
-#define   UNIPHIER_UART_LSR_THRE	0x20 /* Transmit-hold-register empty */
-#define   UNIPHIER_UART_LSR_DR		0x01 /* Receiver data ready */
+#define   UNIPHIER_UART_LSR_TEMT_BIT	6	/* Transmitter empty */
+#define   UNIPHIER_UART_LSR_THRE_BIT	5	/* Transmit-hold-register empty */
+#define   UNIPHIER_UART_LSR_DR_BIT	0	/* Receiver data ready */
 #define UNIPHIER_UART_DLR	0x24	/* Divisor Latch Register */
-
-	/*
-	 * UniPhier serial console implemented based on
-	 * drivers/console/aarch64/skeleton_console.S
-	 */
 
 	.globl	console_core_init
 	.globl	console_core_putc
 	.globl	console_core_getc
 
-	/* -----------------------------------------------
-	 * int console_core_init(uintptr_t base_addr,
-	 * unsigned int uart_clk, unsigned int baud_rate)
-	 * Function to initialize the console without a
-	 * C Runtime to print debug information. This
-	 * function will be accessed by console_init and
-	 * crash reporting.
-	 * In: x0 - console base address
-	 *     w1 - Uart clock in Hz
-	 *     w2 - Baud rate
-	 * Out: return 1 on success else 0 on error
-	 * Clobber list : x1, x2
-	 * -----------------------------------------------
-	 */
+/*
+ * In: x0 - console base address
+ *     w1 - uart clock in Hz
+ *     w2 - baud rate
+ * Out: return 1 (on success)
+ * Clobber list : x1, x2
+ */
 func console_core_init
-	/* Check the input base address */
-	cbz	x0, core_init_fail
-	/* Check baud rate and uart clock for sanity */
-	cbz	w1, core_init_fail
-	cbz	w2, core_init_fail
+	cbz	x0, 1f
+	cbz	w1, 1f
+	cbz	w2, 1f
 
-	/* Divisor = Uart_clock / (16 * Baudrate) */
+	/* divisor = uart_clock / (16 * baud_rate) */
 	udiv	w2, w1, w2
 	lsr	w2, w2, #4
+
+	/* Make sure the transmitter is empty before the divisor set/change */
+0:	ldr	w1, [x0, #UNIPHIER_UART_LSR]
+	tbz	w1, #UNIPHIER_UART_LSR_TEMT_BIT, 0b
+
 	str	w2, [x0, #UNIPHIER_UART_DLR]
+
+	mov	w2, #UNIPHIER_UART_FCR_ENABLE_FIFO
+	str	w2, [x0, #UNIPHIER_UART_FCR]
 
 	mov	w2, #(UNIPHIER_UART_LCR_WLEN8 << 8)
 	str	w2, [x0, #UNIPHIER_UART_LCR_MCR]
 
 	mov	w0, #1
 	ret
-core_init_fail:
-	mov	w0, wzr
+1:	mov	w0, #1
 	ret
 endfunc console_core_init
 
-	/* --------------------------------------------------------
-	 * int console_core_putc(int c, uintptr_t base_addr)
-	 * Function to output a character over the console. It
-	 * returns the character printed on success or -1 on error.
-	 * In : w0 - character to be printed
-	 *      x1 - console base address
-	 * Out : return -1 on error else return character.
-	 * Clobber list : x2
-	 * --------------------------------------------------------
-	 */
+/*
+ * In : w0 - character to be printed
+ *      x1 - console base address
+ * Out : return the character written, or -1 on error
+ * Clobber list : x1, x2
+ */
 func console_core_putc
-	/* Check the input parameter */
-	cbz	x1, putc_error
+	/* Error out if the console is not initialized */
+	cbz	x1, 2f
 
-	/* Wait until the transmit FIFO gets empty */
-1:	ldr	w2, [x1, #UNIPHIER_UART_LSR]
-	and	w2, w2, #UNIPHIER_UART_LSR_THRE
-	cbz	w2, 1b
+	/* Wait until the transmitter FIFO gets empty */
+0:	ldr	w2, [x1, #UNIPHIER_UART_LSR]
+	tbz	w2, #UNIPHIER_UART_LSR_THRE_BIT, 0b
 
-	str	w0, [x1, #UNIPHIER_UART_TX]
+	mov	w2, w0
 
-	cmp	w0, #'\n'
-	b.ne	2f
-	mov	w0, #'\r'	/* Append '\r' to '\n' */
+1:	str	w2, [x1, #UNIPHIER_UART_TX]
+
+	cmp	w2, #'\n'
+	b.ne	3f
+	mov	w2, #'\r'	/* Append '\r' to '\n' */
 	b	1b
-2:
-	ret
-putc_error:
-	mov	w0, #-1
-	ret
+2:	mov	w0, #-1
+3:	ret
 endfunc console_core_putc
 
-	/* ---------------------------------------------
-	 * int console_core_getc(uintptr_t base_addr)
-	 * Function to get a character from the console.
-	 * It returns the character grabbed on success
-	 * or -1 on error.
-	 * In : x0 - console base address
-	 * Clobber list : x0, x1
-	 * ---------------------------------------------
-	 */
+/*
+ * In : x0 - console base address
+ * Out: return the character read
+ * Clobber list : x1
+ */
 func console_core_getc
-	cbz	x0, getc_error
+	/* Error out if the console is not initialized */
+	cbz	x0, 1f
 
-	/* Wait while the receive FIFO is empty */
-1:	ldr	w1, [x0, #UNIPHIER_UART_LSR]
-	and	w1, w1, #UNIPHIER_UART_LSR_DR
-	cbz	w1, 1b
+	/* Wait while the receiver FIFO is empty */
+0:	ldr	w1, [x0, #UNIPHIER_UART_LSR]
+	tbz	w1, #UNIPHIER_UART_LSR_DR_BIT, 0b
 
 	ldr	w0, [x0, #UNIPHIER_UART_RX]
 
 	ret
-getc_error:
-	mov	w0, #-1
+1:	mov	w0, #-1
 	ret
 endfunc console_core_getc

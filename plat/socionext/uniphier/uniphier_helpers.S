@@ -72,10 +72,14 @@ endfunc plat_uniphier_calc_core_pos
 	 * ---------------------------------------------
 	 */
 func plat_crash_console_init
-	mov_imm	x0, PLAT_UNIPHIER_CRASH_UART_BASE
-	mov_imm	x1, PLAT_UNIPHIER_CRASH_UART_CLK_IN_HZ
-	mov_imm	x2, UNIPHIER_CONSOLE_BAUDRATE
+#ifdef UNIPHIER_CRASH_CONSOLE_FIXED
+	mov_imm x0, UNIPHIER_DEFAULT_CRASH_CONSOLE_BASE
+	mov_imm x1, UNIPHIER_DEFAULT_CRASH_CONSOLE_CLK
+	mov_imm x2, UNIPHIER_DEFAULT_CRASH_CONSOLE_BAUDRATE
 	b	console_core_init
+#else
+	ret
+#endif
 endfunc plat_crash_console_init
 
 	/* ---------------------------------------------
@@ -86,7 +90,11 @@ endfunc plat_crash_console_init
 	 * ---------------------------------------------
 	 */
 func plat_crash_console_putc
-	mov_imm	x1, PLAT_UNIPHIER_CRASH_UART_BASE
+#ifdef UNIPHIER_CRASH_CONSOLE_FIXED
+	mov_imm x1, UNIPHIER_DEFAULT_CRASH_CONSOLE_BASE
+#else
+	ldr	x1, uniphier_crash_console_base
+#endif
 	b	console_core_putc
 endfunc plat_crash_console_putc
 

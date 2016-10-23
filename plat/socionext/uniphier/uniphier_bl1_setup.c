@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, ARM Limited and Contributors. All rights reserved.
+ * Copyright (c) 2013-2016, ARM Limited and Contributors. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -29,58 +29,67 @@
  */
 
 #include <arch_helpers.h>
-#include <cci.h>
+#include <bl_common.h>
+#include <console.h>
+#include <debug.h>
 #include <plat_uniphier.h>
-#include <utils.h>
+#include <platform.h>
+#include <platform_def.h>
 
-#define CCI500_BASE		0x5FD00000
+static struct uniphier_board_data uniphier_board_data;
+static struct uniphier_dram_data uniphier_dram_data;
 
-static const int cci_map[] = {
-	0,
-	1,
+void bl1_early_platform_setup(void)
+{
+	uniphier_get_board_data(&uniphier_board_data);
+
+	uniphier_console_setup(uniphier_board_data.soc_id,
+			       &uniphier_board_data.boot_console);
+}
+
+void bl1_plat_arch_setup(void)
+{
+	/* The MMU has been enabled in the boot ROM */
+}
+
+void bl1_platform_setup(void)
+{
+	int ret;
+
+	uniphier_get_dram_data(&uniphier_dram_data);
+	uniphier_show_board_data(&uniphier_board_data);
+
+	ret = uniphier_show_dram_data(&uniphier_dram_data);
+	if (ret)
+		plat_error_handler(ret);
+
+	ret = uniphier_soc_setup(uniphier_board_data.soc_id, &uniphier_dram_data);
+	if (ret) {
+		ERROR("failed to setup SoC\n");
+		plat_error_handler(ret);
+	}
+
+	ret = uniphier_io_setup(uniphier_board_data.soc_id);
+	if (ret) {
+		ERROR("failed to setup io devices\n");
+		plat_error_handler(ret);
+	}
+}
+
+static meminfo_t uniphier_tzram_layout = {
+	.total_base = SEC_DRAM_BASE,
+	.total_size = SEC_DRAM_SIZE,
 };
 
-/******************************************************************************
- * Helper function to initialize ARM CCI driver.
- *****************************************************************************/
-void plat_uniphier_cci_init(void)
+meminfo_t *bl1_plat_sec_mem_layout(void)
 {
-	switch (uniphier_get_soc_id()) {
-	case UNIPHIER_LD20_ID:
-		cci_init(CCI500_BASE, cci_map, ARRAY_SIZE(cci_map));
-		break;
-	default:
-		/* no CCI */
-		break;
-	}
+	return &uniphier_tzram_layout;
 }
 
-/******************************************************************************
- * Helper function to place current master into coherency
- *****************************************************************************/
-void plat_uniphier_cci_enable(void)
+void bl1_init_bl2_mem_layout(const meminfo_t *bl1_mem_layout,
+			     meminfo_t *bl2_mem_layout)
 {
-	switch (uniphier_get_soc_id()) {
-	case UNIPHIER_LD20_ID:
-		cci_enable_snoop_dvm_reqs(MPIDR_AFFLVL1_VAL(read_mpidr_el1()));
-		break;
-	default:
-		/* no CCI */
-		break;
-	}
-}
+	*bl2_mem_layout = *bl1_mem_layout;
 
-/******************************************************************************
- * Helper function to remove current master from coherency
- *****************************************************************************/
-void plat_uniphier_cci_disable(void)
-{
-	switch (uniphier_get_soc_id()) {
-	case UNIPHIER_LD20_ID:
-		cci_disable_snoop_dvm_reqs(MPIDR_AFFLVL1_VAL(read_mpidr_el1()));
-		break;
-	default:
-		/* no CCI */
-		break;
-	}
+	flush_dcache_range((uint64_t)bl2_mem_layout, sizeof(*bl2_mem_layout));
 }

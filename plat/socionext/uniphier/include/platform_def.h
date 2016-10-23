@@ -32,6 +32,7 @@
 #define __PLATFORM_DEF_H__
 
 #include <common_def.h>
+#include <tbbr/tbbr_img_def.h>
 
 #define PLATFORM_STACK_SIZE 0x400
 
@@ -50,19 +51,40 @@
 #define PLAT_MAX_OFF_STATE   2    /* tmp */
 #define PLAT_MAX_RET_STATE   1    /* tmp */
 
-#define BL31_BASE		0x80000000
-#define BL31_PROGBITS_MAX_SIZE	0x00010000
-#define BL31_PROGBITS_LIMIT	((BL31_BASE) + (BL31_PROGBITS_MAX_SIZE))
-#define BL31_MAX_SIZE		0x00080000
-#define BL31_LIMIT		((BL31_BASE) + (BL31_MAX_SIZE))
+#define SEC_SRAM_BASE		0x30000000
+#define SEC_SRAM_SIZE		0x00010000
+#define SEC_DRAM_BASE		0x80000000
+#define SEC_DRAM_SIZE		0x01000000
 
-#define ADDR_SPACE_SIZE			(1ull << 32)
+#ifndef BL1_PREPAD
+#define BL1_PREPAD		0
+#endif
+
+#define BL1_RO_BASE		((SEC_SRAM_BASE) + (BL1_PREPAD))
+#define BL1_RW_LIMIT		((SEC_SRAM_BASE) + (SEC_SRAM_SIZE))
+#define BL1_RW_BASE		((BL1_RW_LIMIT) - 0x2000)
+#define BL1_RO_LIMIT		((BL1_RW_BASE) - 0x200)
+
+/* BL2 at the tail of secure DRAM */
+#define BL2_LIMIT		((SEC_DRAM_BASE) + (SEC_DRAM_SIZE))
+#define BL2_BASE		((BL2_LIMIT) - 0x40000)
+
+/* BL31 at the beginning of the secure DRAM */
+#define BL31_BASE		(SEC_DRAM_BASE)
+#define BL31_PROGBITS_LIMIT	((BL31_BASE) + 0x10000)
+#define BL31_LIMIT		((BL31_BASE) + 0x80000)
+
+#define BL33_BASE		0x84000000
+#define BL33_MAX_SIZE		0x00100000
+
+#define PLAT_PHY_ADDR_SPACE_SIZE			(1ull << 32)
+#define PLAT_VIRT_ADDR_SPACE_SIZE			(1ull << 32)
 
 /* GICv3 */
 #define PLAT_UNIPHIER_GICD_BASE			0x5fe00000
-#if defined(UNIPHIER_LD11)
+#if defined(CONFIG_UNIPHIER_LD11)
 #define PLAT_UNIPHIER_GICR_BASE			0x5fe40000
-#elif defined(UNIPHIER_LD20)
+#elif defined(CONFIG_UNIPHIER_LD20)
 #define PLAT_UNIPHIER_GICR_BASE			0x5fe80000
 #endif
 
@@ -103,5 +125,9 @@
 
 #define MAX_XLAT_TABLES		20
 #define MAX_MMAP_REGIONS	25
+
+#define MAX_IO_HANDLES		4
+#define MAX_IO_DEVICES		4
+#define MAX_IO_BLOCK_DEVICES	1
 
 #endif /* __PLATFORM_DEF_H__ */

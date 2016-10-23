@@ -42,12 +42,9 @@
 #define BL31_COHERENT_RAM_BASE (uintptr_t)(&__COHERENT_RAM_START__)
 #define BL31_COHERENT_RAM_LIMIT (uintptr_t)(&__COHERENT_RAM_END__)
 
-/*
- * Placeholder variables for copying the arguments that have been passed to
- * BL31 from BL2.
- */
 static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;
+static struct uniphier_board_data uniphier_board_data;
 
 entry_point_info_t *bl31_plat_get_next_image_ep_info(uint32_t type)
 {
@@ -55,21 +52,27 @@ entry_point_info_t *bl31_plat_get_next_image_ep_info(uint32_t type)
 	return type == NON_SECURE ? &bl33_image_ep_info : &bl32_image_ep_info;
 }
 
-void bl31_early_platform_setup(bl31_params_t *from_bl2,
-			       void *plat_params_from_bl2)
+void bl31_early_platform_setup(bl_params_t *params_from_bl2,
+			       const struct uniphier_board_data *bd)
 {
-	/* Initialize the console to provide early debug support */
-	console_init(PLAT_UNIPHIER_BOOT_UART_BASE,
-		     PLAT_UNIPHIER_BOOT_UART_CLK_IN_HZ,
-		     UNIPHIER_CONSOLE_BAUDRATE);
+	bl_params_node_t *bl_params = params_from_bl2->head;
+	uniphier_board_data = *bd;
 
-	/* Populate entry point information for BL33 */
-	SET_PARAM_HEAD(&bl33_image_ep_info, PARAM_EP, VERSION_1, 0);
-	SET_SECURITY_STATE(bl33_image_ep_info.h.attr, NON_SECURE);
+	uniphier_console_setup(uniphier_board_data.soc_id,
+			       &uniphier_board_data.boot_console);
 
-	bl33_image_ep_info.pc = from_bl2->bl33_image_info->image_base;
-	bl33_image_ep_info.spsr = SPSR_64(MODE_EL1, MODE_SP_ELX,
-					  DISABLE_ALL_EXCEPTIONS);
+	while (bl_params) {
+		if (bl_params->image_id == BL32_IMAGE_ID)
+			bl32_image_ep_info = *bl_params->ep_info;
+
+		if (bl_params->image_id == BL33_IMAGE_ID)
+			bl33_image_ep_info = *bl_params->ep_info;
+
+		bl_params = bl_params->next_params_info;
+	}
+
+	if (bl33_image_ep_info.pc == 0)
+		panic();
 
 	/*
 	 * Initialize Interconnect for this cluster during cold boot.
@@ -107,4 +110,12 @@ void bl31_plat_arch_setup(void)
 				   BL31_COHERENT_RAM_BASE,
 				   BL31_COHERENT_RAM_LIMIT);
 	enable_mmu_el3(0);
+}
+
+void bl31_plat_runtime_setup(void)
+{
+	console_uninit();
+
+	uniphier_console_setup(uniphier_board_data.soc_id,
+			       &uniphier_board_data.runtime_console);
 }

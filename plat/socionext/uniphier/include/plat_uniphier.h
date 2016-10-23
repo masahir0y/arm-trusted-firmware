@@ -30,8 +30,113 @@
 #ifndef __PLAT_UNIPHIER_H__
 #define __PLAT_UNIPHIER_H__
 
+#include <errno.h>
 #include <stdint.h>
 #include <types.h>
+
+#define UNIPHIER_LD11_ID			0x31
+#define UNIPHIER_LD20_ID			0x32
+
+/* useful macros */
+#define SZ_1M				0x00100000
+#define SZ_2M				0x00200000
+#define SZ_4M				0x00400000
+#define SZ_8M				0x00800000
+#define SZ_16M				0x01000000
+#define SZ_32M				0x02000000
+#define SZ_64M				0x04000000
+#define SZ_128M				0x08000000
+#define SZ_256M				0x10000000
+#define SZ_512M				0x20000000
+
+#define SZ_1G				0x40000000
+#define SZ_2G				0x80000000
+
+#define abs(x) 				((x) < 0 ? -(x) : (x))
+
+struct uniphier_console_data {
+	unsigned int uart_port;
+	unsigned int baud_rate;
+};
+
+#define UNIPHIER_MAX_BOARD_NAME_LEN	32
+
+struct uniphier_board_data {
+	unsigned int soc_id;
+	unsigned char board_name[UNIPHIER_MAX_BOARD_NAME_LEN];
+	struct uniphier_console_data boot_console;
+	struct uniphier_console_data runtime_console;
+};
+
+#define UNIPHIER_MAX_DRAM_NR_CH		3
+
+struct uniphier_dram_ch {
+	uintptr_t base;
+	uintptr_t size;
+	unsigned int width;
+};
+
+struct uniphier_dram_data {
+	unsigned int board_type;
+	unsigned int dram_freq;
+	unsigned int dram_nr_ch;
+	struct uniphier_dram_ch dram_ch[UNIPHIER_MAX_DRAM_NR_CH];
+};
+
+void uniphier_get_board_data(struct uniphier_board_data *bd);
+void uniphier_get_dram_data(struct uniphier_dram_data *dram);
+
+void uniphier_show_board_data(const struct uniphier_board_data *bd);
+int uniphier_show_dram_data(const struct uniphier_dram_data *dram);
+
+unsigned int uniphier_get_soc_id(void);
+
+int uniphier_console_setup(unsigned int soc_id,
+			   const struct uniphier_console_data *con);
+
+int uniphier_soc_setup(unsigned int soc_id,
+		       const struct uniphier_dram_data *dram);
+
+void uniphier_pinctrl_set_mux(unsigned int pin, unsigned int mux);
+
+void uniphier_ld11_clk_enable_uart(void);
+void uniphier_ld11_clk_enable_dram(void);
+void uniphier_ld20_clk_enable_uart(void);
+void uniphier_ld20_clk_enable_dram(void);
+
+int uniphier_memconf_2ch_init(const struct uniphier_dram_data *dram);
+int uniphier_memconf_3ch_init(const struct uniphier_dram_data *dram);
+
+#ifdef CONFIG_UNIPHIER_LD11
+int uniphier_ld11_umc_init(const struct uniphier_dram_data *dram);
+#else
+static inline int uniphier_ld11_umc_init(const struct uniphier_dram_data *dram)
+{
+	return -ENOTSUP;
+}
+#endif
+
+#ifdef CONFIG_UNIPHIER_LD20
+int uniphier_ld20_umc_init(const struct uniphier_dram_data *dram);
+#else
+static inline int uniphier_ld20_umc_init(const struct uniphier_dram_data *dram)
+{
+	return -ENOTSUP;
+}
+#endif
+
+#define UNIPHIER_BOOT_DEVICE_EMMC	0
+#define UNIPHIER_BOOT_DEVICE_NAND	1
+#define UNIPHIER_BOOT_DEVICE_NOR	2
+#define UNIPHIER_BOOT_DEVICE_USB	3
+
+int uniphier_get_boot_device(unsigned int soc_id);
+
+int uniphier_rom_emmc_init(unsigned int soc_id, uintptr_t *block_dev_spec);
+int uniphier_rom_nand_init(unsigned int soc_id, uintptr_t *block_dev_spec);
+int uniphier_rom_usb_init(unsigned int soc_id, uintptr_t *block_dev_spec);
+
+int uniphier_io_setup(unsigned int soc_id);
 
 void uniphier_setup_page_tables(uintptr_t total_base,
 				size_t total_size,
@@ -40,7 +145,7 @@ void uniphier_setup_page_tables(uintptr_t total_base,
 				uintptr_t coh_start,
 				uintptr_t coh_limit);
 
-#ifdef UNIPHIER_LD20
+#ifdef CONFIG_UNIPHIER_LD20
 void plat_uniphier_cci_init(void);
 void plat_uniphier_cci_enable(void);
 void plat_uniphier_cci_disable(void);

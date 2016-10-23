@@ -28,6 +28,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
+override COLD_BOOT_SINGLE_CPU	:= 1
+override LOAD_IMAGE_V2		:= 1
 # Disable the PSCI platform compatibility layer
 override ENABLE_PLAT_COMPAT	:= 0
 # UniPhier platform does not need deprecated functions
@@ -35,41 +37,104 @@ override ERROR_DEPRECATED	:= 1
 
 override USE_COHERENT_MEM	:= 1
 
-SUPPORTED_SOCS := ld11 ld20
-ifneq ($(words $(filter $(SOC), $(SUPPORTED_SOCS))),1)
-$(error Please specify SOC=<SOC>, here <SOC> is one of: $(SUPPORTED_SOCS))
+BL1_PREPAD			:= 4096
+CONFIG_UNIPHIER_LD11		:= y
+CONFIG_UNIPHIER_LD20		:= y
+
+$(eval $(call add_define,BL1_PREPAD))
+
+ifeq ($(CONFIG_UNIPHIER_LD11),y)
+$(eval $(call add_define,CONFIG_UNIPHIER_LD11))
 endif
 
-$(eval $(call add_define,UNIPHIER_$(call uppercase,$(SOC))))
-
-PLAT_PATH		:=	plat/socionext/uniphier
-
-PLAT_INCLUDES		:=	-I$(PLAT_PATH)/include
-
-PLAT_BL_COMMON_SOURCES	+=	drivers/console/aarch64/console.S	\
-				$(PLAT_PATH)/uniphier_common.c		\
-				$(PLAT_PATH)/uniphier_console.S		\
-				$(PLAT_PATH)/uniphier_helpers.S
-
-ifeq ($(SOC),ld20)
-UNIPHIER_CCI_SOURCES	:=	drivers/arm/cci/cci.c			\
-				$(PLAT_PATH)/uniphier_cci.c
+ifeq ($(CONFIG_UNIPHIER_LD20),y)
+$(eval $(call add_define,CONFIG_UNIPHIER_LD20))
 endif
 
-BL31_SOURCES		+=	drivers/arm/gic/common/gic_common.c	\
-				drivers/arm/gic/v3/gicv3_helpers.c	\
-				drivers/arm/gic/v3/gicv3_main.c		\
-				lib/cpus/aarch64/cortex_a53.S		\
-				lib/cpus/aarch64/cortex_a72.S		\
-				lib/xlat_tables/aarch64/xlat_tables.c	\
-				lib/xlat_tables/xlat_tables_common.c	\
-				plat/common/aarch64/plat_common.c	\
-				plat/common/aarch64/platform_mp_stack.S	\
-				plat/common/plat_gicv3.c		\
-				plat/common/plat_psci_common.c		\
-				$(PLAT_PATH)/uniphier_bl31_setup.c	\
-				$(PLAT_PATH)/uniphier_gicv3.c		\
-				$(PLAT_PATH)/uniphier_pm.c		\
-				$(PLAT_PATH)/uniphier_smp.S		\
-				$(PLAT_PATH)/uniphier_topology.c	\
-				$(UNIPHIER_CCI_SOURCES)
+PLAT_PATH			:= plat/socionext/uniphier
+PLAT_INCLUDES			:= -I$(PLAT_PATH)/include
+
+# IO sources for BL1, BL2
+io-y				+= drivers/io/io_block.c
+io-y				+= drivers/io/io_fip.c
+io-y				+= drivers/io/io_memmap.c
+io-y				+= drivers/io/io_storage.c
+io-y				+= $(PLAT_PATH)/uniphier_boot_device.c
+io-y				+= $(PLAT_PATH)/uniphier_io_storage.c
+io-y				+= $(PLAT_PATH)/uniphier_rom_api.c
+
+# common sources for BL1, BL2, BL31
+common-y			+= drivers/console/aarch64/console.S
+common-y			+= $(PLAT_PATH)/uniphier_clk.c
+common-y			+= $(PLAT_PATH)/uniphier_common.c
+common-y			+= $(PLAT_PATH)/uniphier_console.S
+common-y			+= $(PLAT_PATH)/uniphier_console_setup.c
+common-y			+= $(PLAT_PATH)/uniphier_helpers.S
+common-y			+= $(PLAT_PATH)/uniphier_pinctrl.c
+common-y			+= $(PLAT_PATH)/uniphier_soc_info.c
+
+bl1-$(CONFIG_UNIPHIER_LD11)	+= lib/cpus/aarch64/cortex_a53.S
+bl1-$(CONFIG_UNIPHIER_LD20)	+= lib/cpus/aarch64/cortex_a72.S
+bl1-y				+= plat/common/aarch64/platform_up_stack.S
+bl1-y				+= $(PLAT_PATH)/uniphier_bl1_helpers.S
+bl1-y				+= $(PLAT_PATH)/uniphier_bl1_setup.c
+bl1-y				+= $(PLAT_PATH)/uniphier_board_param.c
+bl1-y				+= $(PLAT_PATH)/uniphier_soc_setup.c
+bl1-y				+= $(PLAT_PATH)/dram/memconf.c
+bl1-$(CONFIG_UNIPHIER_LD11)	+= $(PLAT_PATH)/dram/umc_ld11.c
+bl1-$(CONFIG_UNIPHIER_LD20)	+= $(PLAT_PATH)/dram/umc_ld20.c
+bl1-y				+= $(io-y)
+
+bl2-y				+= plat/common/aarch64/platform_up_stack.S
+bl2-y				+= common/desc_image_load.c
+bl2-y				+= $(PLAT_PATH)/uniphier_bl2_setup.c
+bl2-y				+= $(PLAT_PATH)/uniphier_board_param.c
+bl2-y				+= $(PLAT_PATH)/uniphier_image_desc.c
+bl2-y				+= $(io-y)
+
+bl31-$(CONFIG_UNIPHIER_LD20)	+= drivers/arm/cci/cci.c
+bl31-y				+= drivers/arm/gic/common/gic_common.c
+bl31-y				+= drivers/arm/gic/v3/gicv3_helpers.c
+bl31-y				+= drivers/arm/gic/v3/gicv3_main.c
+bl31-y				+= lib/cpus/aarch64/cortex_a53.S
+bl31-y				+= lib/cpus/aarch64/cortex_a72.S
+bl31-y				+= lib/xlat_tables/aarch64/xlat_tables.c
+bl31-y				+= lib/xlat_tables/xlat_tables_common.c
+bl31-y				+= plat/common/aarch64/plat_common.c
+bl31-y				+= plat/common/aarch64/platform_mp_stack.S
+bl31-y				+= plat/common/plat_gicv3.c
+bl31-y				+= plat/common/plat_psci_common.c
+bl31-y				+= $(PLAT_PATH)/uniphier_bl31_setup.c
+bl31-$(CONFIG_UNIPHIER_LD20)	+= $(PLAT_PATH)/uniphier_cci.c
+bl31-y				+= $(PLAT_PATH)/uniphier_gicv3.c
+bl31-y				+= $(PLAT_PATH)/uniphier_pm.c
+bl31-y				+= $(PLAT_PATH)/uniphier_smp.S
+bl31-y				+= $(PLAT_PATH)/uniphier_topology.c
+
+PLAT_BL_COMMON_SOURCES		:= $(sort $(common-y))
+BL1_SOURCES			:= $(sort $(bl1-y))
+BL2_SOURCES			:= $(sort $(bl2-y))
+BL31_SOURCES 			:= $(sort $(bl31-y))
+
+param-$(CONFIG_UNIPHIER_LD11)	+= ld11*.mk
+param-$(CONFIG_UNIPHIER_LD20)	+= ld20*.mk ld21*.mk ld22*.mk
+
+BOARD_PARAMS	:=  $(wildcard $(addprefix $(PLAT_PATH)/board_params/, $(param-y)))
+
+.PHONY: uniphier_bl1
+
+define MAKE_UNIPHIER_BL1
+
+	$(eval BIN := $(call IMG_BIN,$(patsubst %.mk,1_%,$(notdir $(1)))))
+
+$(BIN): $(BUILD_PLAT)/bl1.bin $(1)
+	@echo "  GEN     $$@"
+	$(Q)MAKEFLAGS="${MAKEFLAGS} --no-print-directory" \
+	$${MAKE} -C $(PLAT_PATH)/board_params TARGET=$(CURDIR)/$$@ \
+	PARAM_FILE=$(notdir $(1)) BL1_PREPAD=$(BL1_PREPAD) \
+	BL1_BIN=$(CURDIR)/$(BUILD_PLAT)/bl1.bin
+
+uniphier_bl1: $(BIN) bl1
+endef
+
+$(foreach b, $(BOARD_PARAMS), $(eval $(call MAKE_UNIPHIER_BL1,$(b))))
