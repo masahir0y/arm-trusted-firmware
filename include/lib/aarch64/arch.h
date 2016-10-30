@@ -299,17 +299,17 @@
 #define TCR_SH_OUTER_SHAREABLE	(0x2 << 12)
 #define TCR_SH_INNER_SHAREABLE	(0x3 << 12)
 
-#define MODE_SP_SHIFT		0x0
+#define MODE_SP_SHIFT		0
 #define MODE_SP_MASK		0x1
 #define MODE_SP_EL0		0x0
 #define MODE_SP_ELX		0x1
 
-#define MODE_RW_SHIFT		0x4
+#define MODE_RW_SHIFT		4
 #define MODE_RW_MASK		0x1
 #define MODE_RW_64			0x0
 #define MODE_RW_32			0x1
 
-#define MODE_EL_SHIFT		0x2
+#define MODE_EL_SHIFT		2
 #define MODE_EL_MASK		0x3
 #define MODE_EL3		0x3
 #define MODE_EL2		0x2

@@ -284,7 +284,7 @@
 #define TTBCR_T0SZ_SHIFT	0
 #define TTBCR_T0SZ_MASK		(0x7)
 
-#define MODE_RW_SHIFT		0x4
+#define MODE_RW_SHIFT		4
 #define MODE_RW_MASK		0x1
 #define MODE_RW_32		0x1
 
