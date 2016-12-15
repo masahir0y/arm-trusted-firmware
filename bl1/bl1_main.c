@@ -123,8 +123,8 @@ void bl1_main(void)
 #else
 	val = read_sctlr_el3();
 #endif
-	assert(val & SCTLR_M_BIT);
-	assert(val & SCTLR_C_BIT);
+	//assert(val & SCTLR_M_BIT);
+	//assert(val & SCTLR_C_BIT);
 	assert(val & SCTLR_I_BIT);
 	/*
 	 * Check that Cache Writeback Granule (CWG) in CTR_EL0 matches the
