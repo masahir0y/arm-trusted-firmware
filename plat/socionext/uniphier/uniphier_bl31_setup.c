@@ -38,10 +38,6 @@
 #include <platform_def.h>
 #include <xlat_tables.h>
 
-#define BL31_END (uintptr_t)(&__BL31_END__)
-#define BL31_COHERENT_RAM_BASE (uintptr_t)(&__COHERENT_RAM_START__)
-#define BL31_COHERENT_RAM_LIMIT (uintptr_t)(&__COHERENT_RAM_END__)
-
 static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;
 static struct uniphier_board_data uniphier_board_data;
@@ -103,12 +99,7 @@ void bl31_platform_setup(void)
 
 void bl31_plat_arch_setup(void)
 {
-	uniphier_setup_page_tables(BL31_BASE,
-				   BL31_END - BL31_BASE,
-				   BL_CODE_BASE,
-				   BL_CODE_LIMIT,
-				   BL31_COHERENT_RAM_BASE,
-				   BL31_COHERENT_RAM_LIMIT);
+	uniphier_mmap_setup(BL31_BASE, BL31_SIZE, NULL);
 	enable_mmu_el3(0);
 }
 

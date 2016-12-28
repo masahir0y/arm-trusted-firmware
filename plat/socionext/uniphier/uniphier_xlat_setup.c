@@ -32,14 +32,8 @@
 #include <platform_def.h>
 #include <xlat_tables.h>
 
-/*
- * This doesn't include Trusted SRAM as uniphier_setup_page_tables() already
- * takes care of mapping it.
- */
-const mmap_region_t uniphier_mmap[] = {
-	MAP_REGION_FLAT(0x00000000, 0x80000000, MT_DEVICE | MT_RW | MT_SECURE),
-	{0}
-};
+#define UNIPHIER_REG_REGION_BASE		0x50000000
+#define UNIPHIER_REG_REGION_SIZE		0x20000000
 
 /*
  * Set up the page tables for the generic and platform-specific memory regions.
@@ -50,45 +44,42 @@ const mmap_region_t uniphier_mmap[] = {
  * - Read-only data section;
  * - Coherent memory region
  */
-void uniphier_setup_page_tables(uintptr_t total_base,
-				size_t total_size,
-				uintptr_t code_start,
-				uintptr_t code_limit,
-				uintptr_t coh_start,
-				uintptr_t coh_limit)
+void uniphier_mmap_setup(uintptr_t total_base, size_t total_size,
+			 const struct mmap_region *mmap)
 {
 	/*
-	 * Map the Trusted SRAM with appropriate memory attributes.
+	 * Map the Trusted RAM with appropriate memory attributes.
 	 * Subsequent mappings will adjust the attributes for specific regions.
 	 */
 	VERBOSE("Trusted SRAM seen by this BL image: %p - %p\n",
-		(void *) total_base, (void *) (total_base + total_size));
+		(void *)total_base, (void *)(total_base + total_size));
 	mmap_add_region(total_base, total_base,
 			total_size,
 			MT_MEMORY | MT_RW | MT_SECURE);
 
 	/* Re-map the code section */
 	VERBOSE("Code region: %p - %p\n",
-		(void *) code_start, (void *) code_limit);
-	mmap_add_region(code_start, code_start,
-			code_limit - code_start,
+		(void *)BL_CODE_BASE, (void *)BL_CODE_LIMIT);
+	mmap_add_region(BL_CODE_BASE, BL_CODE_BASE,
+			BL_CODE_LIMIT - BL_CODE_BASE,
 			MT_CODE | MT_SECURE);
 
 	/* Re-map the coherent memory region */
 	VERBOSE("Coherent region: %p - %p\n",
-		(void *) coh_start, (void *) coh_limit);
-	mmap_add_region(coh_start, coh_start,
-			coh_limit - coh_start,
+		(void *)BL_COHERENT_RAM_BASE, (void *)BL_COHERENT_RAM_END);
+	mmap_add_region(BL_COHERENT_RAM_BASE, BL_COHERENT_RAM_BASE,
+			BL_COHERENT_RAM_END - BL_COHERENT_RAM_BASE,
 			MT_DEVICE | MT_RW | MT_SECURE);
 
-	/* Now (re-)map the platform-specific memory regions */
-	mmap_add(uniphier_mmap);
+	/* Register region */
+	mmap_add_region(UNIPHIER_REG_REGION_BASE, UNIPHIER_REG_REGION_BASE,
+			UNIPHIER_REG_REGION_SIZE,
+			MT_DEVICE | MT_RW | MT_SECURE);
+
+	/* additional regions if needed */
+	if (mmap)
+		mmap_add(mmap);
 
 	/* Create the page tables to reflect the above mappings */
 	init_xlat_tables();
-}
-
-unsigned int plat_get_syscnt_freq2(void)
-{
-	return 50000000;
 }

@@ -138,12 +138,9 @@ int uniphier_rom_usb_init(unsigned int soc_id, uintptr_t *block_dev_spec);
 
 int uniphier_io_setup(unsigned int soc_id);
 
-void uniphier_setup_page_tables(uintptr_t total_base,
-				size_t total_size,
-				uintptr_t code_start,
-				uintptr_t code_limit,
-				uintptr_t coh_start,
-				uintptr_t coh_limit);
+struct mmap_region;
+void uniphier_mmap_setup(uintptr_t total_base, size_t total_size,
+			 const struct mmap_region *mmap);
 
 #ifdef CONFIG_UNIPHIER_LD20
 void plat_uniphier_cci_init(void);
