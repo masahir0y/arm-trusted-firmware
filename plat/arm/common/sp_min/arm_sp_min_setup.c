@@ -37,8 +37,6 @@
 #include <platform_def.h>
 #include <platform_sp_min.h>
 
-#define BL32_END (uintptr_t)(&__BL32_END__)
-
 static entry_point_info_t bl33_image_ep_info;
 
 /* Weak definitions may be overridden in specific ARM standard platform */

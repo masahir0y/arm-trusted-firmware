@@ -49,15 +49,13 @@ unsigned long __RO_START__;
 unsigned long __RO_END__;
 
 /*
- * The next 3 constants identify the extents of the code, RO data region and the
- * limit of the BL31 image.  These addresses are used by the MMU setup code and
- * therefore they must be page-aligned.  It is the responsibility of the linker
- * script to ensure that __RO_START__, __RO_END__ & __BL31_END__ linker symbols
- * refer to page-aligned addresses.
+ * The next 2 constants identify the extents of the code, RO data region.
+ * These addresses are used by the MMU setup code and therefore they must be
+ * page-aligned.  It is the responsibility of the linker script to ensure that
+ * __RO_START__, __RO_END__ linker symbols refer to page-aligned addresses.
  */
 #define BL31_RO_BASE (unsigned long)(&__RO_START__)
 #define BL31_RO_LIMIT (unsigned long)(&__RO_END__)
-#define BL31_END (unsigned long)(&__BL31_END__)
 
 static entry_point_info_t bl32_ep_info;
 static entry_point_info_t bl33_ep_info;

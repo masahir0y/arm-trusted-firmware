@@ -39,8 +39,6 @@
 #include <plat_arm.h>
 #include <platform.h>
 
-#define BL31_END (uintptr_t)(&__BL31_END__)
-
 /*
  * Placeholder variables for copying the arguments that have been passed to
  * BL31 from BL2.

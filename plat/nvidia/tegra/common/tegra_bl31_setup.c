@@ -53,21 +53,18 @@
  ******************************************************************************/
 extern unsigned long __RO_START__;
 extern unsigned long __RO_END__;
-extern unsigned long __BL31_END__;
 
 extern uint64_t tegra_bl31_phys_base;
 extern uint64_t tegra_console_base;
 
 /*
- * The next 3 constants identify the extents of the code, RO data region and the
- * limit of the BL3-1 image.  These addresses are used by the MMU setup code and
- * therefore they must be page-aligned.  It is the responsibility of the linker
- * script to ensure that __RO_START__, __RO_END__ & __BL31_END__ linker symbols
- * refer to page-aligned addresses.
+ * The next 2 constants identify the extents of the code, RO data region.
+ * These addresses are used by the MMU setup code and therefore they must be
+ * page-aligned.  It is the responsibility of the linker script to ensure that
+ * __RO_START__, __RO_END__ linker symbols refer to page-aligned addresses.
  */
 #define BL31_RO_BASE (unsigned long)(&__RO_START__)
 #define BL31_RO_LIMIT (unsigned long)(&__RO_END__)
-#define BL31_END (unsigned long)(&__BL31_END__)
 
 static entry_point_info_t bl33_image_ep_info, bl32_image_ep_info;
 static plat_params_from_bl2_t plat_bl31_params_from_bl2 = {

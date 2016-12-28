@@ -127,4 +127,7 @@
 #define BL_COHERENT_RAM_BASE	(unsigned long)(&__COHERENT_RAM_START__)
 #define BL_COHERENT_RAM_END	(unsigned long)(&__COHERENT_RAM_END__)
 
+#define BL31_END		(unsigned long)(&__BL31_END__)
+#define BL32_END		(unsigned long)(&__BL32_END__)
+
 #endif /* __COMMON_DEF_H__ */
