@@ -130,8 +130,8 @@ static struct mt8173_mcucfg_regs *const mt8173_mcucfg = (void *)MCUCFG_BASE;
 enum {
 	MP0_CPUCFG_64BIT_SHIFT = 12,
 	MP1_CPUCFG_64BIT_SHIFT = 28,
-	MP0_CPUCFG_64BIT = 0xf << MP0_CPUCFG_64BIT_SHIFT,
-	MP1_CPUCFG_64BIT = 0xf << MP1_CPUCFG_64BIT_SHIFT
+	MP0_CPUCFG_64BIT = 33,
+	MP1_CPUCFG_64BIT = 44,
 };
 
 /* scu related */

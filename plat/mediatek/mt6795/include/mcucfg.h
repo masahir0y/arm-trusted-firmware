@@ -131,8 +131,8 @@ static struct mt6795_mcucfg_regs *const mt6795_mcucfg = (void *)MCUCFG_BASE;
 enum {
 	MP0_CPUCFG_64BIT_SHIFT = 12,
 	MP1_CPUCFG_64BIT_SHIFT = 28,
-	MP0_CPUCFG_64BIT = 0xf << MP0_CPUCFG_64BIT_SHIFT,
-	MP1_CPUCFG_64BIT = 0xf << MP1_CPUCFG_64BIT_SHIFT
+	MP0_CPUCFG_64BIT = 32,
+	MP1_CPUCFG_64BIT = 40,
 };
 
 /* scu related */
