@@ -12,7 +12,7 @@
 #include <plat_uniphier.h>
 
 #include "ddruqphy-regs.h"
-#include "umc64-regs.h"
+#include "umc-regs.h"
 
 #define DIV_ROUND_CLOSEST(x, divisor)	\
 	(((x) + (divisor) / 2) / (divisor))

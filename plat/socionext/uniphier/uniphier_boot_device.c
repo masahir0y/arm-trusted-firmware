@@ -52,43 +52,28 @@ static const int uniphier_boot_device_table[] = {
 };
 
 struct uniphier_boot_device_info {
-	unsigned int soc_id;
 	int (*is_usb_boot)(uint32_t pinmon);
 	const int *boot_device_table;
 };
 
 static const struct uniphier_boot_device_info uniphier_boot_device_info[] = {
-	{
-		.soc_id = UNIPHIER_LD11_ID,
+	[UNIPHIER_SOC_LD11] = {
 		.is_usb_boot = uniphier_ld11_is_usb_boot,
 		.boot_device_table = uniphier_boot_device_table,
 	},
-	{
-		.soc_id = UNIPHIER_LD20_ID,
+	[UNIPHIER_SOC_LD20] = {
 		.is_usb_boot = uniphier_ld20_is_usb_boot,
 		.boot_device_table = uniphier_boot_device_table,
 	},
 };
 
-static const struct uniphier_boot_device_info *uniphier_get_boot_device_info(
-								unsigned int id)
-{
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(uniphier_boot_device_info); i++) {
-		if (uniphier_boot_device_info[i].soc_id == id)
-			return &uniphier_boot_device_info[i];
-	}
-
-	return NULL;
-}
-
-int uniphier_get_boot_device(unsigned int soc_id)
+int uniphier_get_boot_device(unsigned int soc)
 {
 	const struct uniphier_boot_device_info *info;
 	uint32_t pinmon;
 
-	info = uniphier_get_boot_device_info(soc_id);
+	assert(soc < ARRAY_SIZE(uniphier_boot_device_info));
+	info = &uniphier_boot_device_info[soc];
 	if (!info)
 		return -EINVAL;
 

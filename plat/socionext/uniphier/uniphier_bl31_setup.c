@@ -89,8 +89,8 @@ void bl31_early_platform_setup(bl_params_t *params_from_bl2,
 void bl31_platform_setup(void)
 {
 	/* Initialize the GIC driver, cpu and distributor interfaces */
-	plat_uniphier_gic_driver_init();
-	plat_uniphier_gic_init();
+	uniphier_gic_driver_init(uniphier_board_data.soc_id);
+	uniphier_gic_init();
 
 	/* Enable and initialize the System level generic timer */
 	mmio_write_32(UNIPHIER_SYS_CNTCTL_BASE + CNTCR_OFF,

@@ -7,7 +7,7 @@
 #include <plat_uniphier.h>
 
 #include "ddrphy-regs.h"
-#include "umc64-regs.h"
+#include "umc-regs.h"
 
 #define clamp(val, lo, hi) min(max(val, lo), hi)
 

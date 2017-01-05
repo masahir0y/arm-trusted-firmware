@@ -5,50 +5,36 @@
 #include <utils.h>
 
 struct uniphier_initdata {
-	unsigned int soc_id;
 	int (*memconf_init)(const struct uniphier_dram_data *dram);
 	void (*clk_enable)(void);
 	int (*umc_init)(const struct uniphier_dram_data *dram);
 };
 
 static const struct uniphier_initdata uniphier_initdata[] = {
-	{
-		.soc_id = UNIPHIER_LD11_ID,
+	[UNIPHIER_SOC_LD11] = {
 		.memconf_init = uniphier_memconf_2ch_init,
 		.clk_enable = uniphier_ld11_clk_enable_dram,
 		.umc_init = uniphier_ld11_umc_init,
 	},
-	{
-		.soc_id = UNIPHIER_LD20_ID,
-		.memconf_init = uniphier_memconf_2ch_init,
+	[UNIPHIER_SOC_LD20] = {
+		.memconf_init = uniphier_memconf_3ch_init,
 		.clk_enable = uniphier_ld20_clk_enable_dram,
 		.umc_init = uniphier_ld20_umc_init,
 	},
+	[UNIPHIER_SOC_PXS3] = {
+		.memconf_init = uniphier_memconf_3ch_init,
+		.clk_enable = uniphier_pxs3_clk_enable_dram,
+		.umc_init = uniphier_pxs3_umc_init,
+	},
 };
 
-static const struct uniphier_initdata *uniphier_get_initdata(unsigned int id)
-{
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(uniphier_initdata); i++) {
-		if (uniphier_initdata[i].soc_id == id)
-			return &uniphier_initdata[i];
-	}
-
-	return NULL;
-}
-
-int uniphier_soc_setup(unsigned int soc_id,
-		       const struct uniphier_dram_data *dram)
+int uniphier_soc_setup(unsigned int soc, const struct uniphier_dram_data *dram)
 {
 	const struct uniphier_initdata *initdata;
 	int ret;
 
-	initdata = uniphier_get_initdata(soc_id);
-	if (!initdata) {
-		ERROR("Unsupported SoC ID %d\n", soc_id);
-		return -EINVAL;
-	}
+	assert(soc < ARRAY_SIZE(uniphier_initdata));
+	initdata = &uniphier_initdata[soc];
 
 	ret = initdata->memconf_init(dram);
 	if (ret) {

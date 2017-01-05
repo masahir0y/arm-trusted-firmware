@@ -17,7 +17,6 @@ static int (*uniphier_rom_emmc_load_image)(uint32_t block_or_byte, uintptr_t buf
 static int uniphier_rom_emmc_is_over_2gb;
 
 struct uniphier_rom_func_table {
-	unsigned int soc_id;
 	uintptr_t emmc_is_over_2gb;
 	uintptr_t emmc_set_part_access;
 	uintptr_t emmc_clear_part_access;
@@ -28,8 +27,7 @@ struct uniphier_rom_func_table {
 };
 
 static const struct uniphier_rom_func_table uniphier_rom_func_table[] = {
-	{
-		.soc_id = UNIPHIER_LD11_ID,
+	[UNIPHIER_SOC_LD11] = {
 		.emmc_is_over_2gb = 0x1b68,
 		.emmc_set_part_access = 0x1c38,
 		.emmc_clear_part_access = 0x1cd0,
@@ -38,8 +36,7 @@ static const struct uniphier_rom_func_table uniphier_rom_func_table[] = {
 		.nand_load_image = 0x34f0,
 		.usb_load_image = 0x3958,
 	},
-	{
-		.soc_id = UNIPHIER_LD20_ID,
+	[UNIPHIER_SOC_LD20] = {
 		.emmc_is_over_2gb = 0x1ba0,
 		.emmc_set_part_access = 0x1c70,
 		.emmc_clear_part_access = 0x1d10,
@@ -48,20 +45,16 @@ static const struct uniphier_rom_func_table uniphier_rom_func_table[] = {
 		.nand_load_image = 0x35d0,
 		.usb_load_image = 0x37f0,
 	},
+	[UNIPHIER_SOC_PXS3] = {
+		.emmc_is_over_2gb = 0,
+		.emmc_set_part_access = 0,
+		.emmc_clear_part_access = 0,
+		.emmc_send_cmd = 0,
+		.emmc_load_image = 0,
+		.nand_load_image = 0,
+		.usb_load_image = 0,
+	},
 };
-
-static const struct uniphier_rom_func_table *uniphier_get_rom_func_table(
-								unsigned int id)
-{
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(uniphier_rom_func_table); i++) {
-		if (uniphier_rom_func_table[i].soc_id == id)
-			return &uniphier_rom_func_table[i];
-	}
-
-	return NULL;
-}
 
 static size_t uniphier_rom_emmc_read(int lba, uintptr_t buf, size_t size)
 {
@@ -136,16 +129,12 @@ static int __uniphier_rom_emmc_init(const struct uniphier_rom_func_table *funcs)
 	return 0;
 }
 
-int uniphier_rom_emmc_init(unsigned int soc_id, uintptr_t *block_dev_spec)
+int uniphier_rom_emmc_init(unsigned int soc, uintptr_t *block_dev_spec)
 {
-	const struct uniphier_rom_func_table *funcs;
 	int ret;
 
-	funcs = uniphier_get_rom_func_table(soc_id);
-	if (!funcs)
-		return -EINVAL;
-
-	ret = __uniphier_rom_emmc_init(funcs);
+	assert(soc < ARRAY_SIZE(uniphier_rom_func_table));
+	ret = __uniphier_rom_emmc_init(&uniphier_rom_func_table[soc]);
 	if (ret)
 		return ret;
 

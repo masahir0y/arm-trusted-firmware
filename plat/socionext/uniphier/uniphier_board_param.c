@@ -44,6 +44,8 @@ void uniphier_get_board_data(struct uniphier_board_data *bd)
 			mmio_read_32(UNIPHIER_PARAM_RUNTIME_CONSOLE_BAUDRATE);
 
 	bd->soc_id = uniphier_get_soc_id();
+	if (bd->soc_id)
+		panic();
 }
 
 void uniphier_get_dram_data(struct uniphier_dram_data *dram)

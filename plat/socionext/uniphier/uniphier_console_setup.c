@@ -16,15 +16,13 @@ struct uniphier_uart_port {
 };
 
 struct uniphier_uart_info {
-	unsigned int soc_id;
 	unsigned int uart_clk;
 	struct uniphier_uart_port uart_port[UNIPHIER_NR_UART_PORTS];
 	void (*clk_enable)(void);
 };
 
 static const struct uniphier_uart_info uniphier_uart_info[] = {
-	{
-		.soc_id = UNIPHIER_LD11_ID,
+	[UNIPHIER_SOC_LD11] = {
 		.uart_clk = 58820000,
 		.uart_port = {
 			{ .base = 0x54006800, .pin = 54, .mux = 0, },
@@ -34,8 +32,7 @@ static const struct uniphier_uart_info uniphier_uart_info[] = {
 		},
 		.clk_enable = uniphier_ld11_clk_enable_uart,
 	},
-	{
-		.soc_id = UNIPHIER_LD20_ID,
+	[UNIPHIER_SOC_LD20] = {
 		.uart_clk = 58820000,
 		.uart_port = {
 			{ .base = 0x54006800, .pin = 54, .mux = 0, },
@@ -45,21 +42,19 @@ static const struct uniphier_uart_info uniphier_uart_info[] = {
 		},
 		.clk_enable = uniphier_ld20_clk_enable_uart,
 	},
+	[UNIPHIER_SOC_PXS3] = {
+		.uart_clk = 58820000,
+		.uart_port = {
+			{ .base = 0x54006800, .pin = 92, .mux = 0, },
+			{ .base = 0x54006900, .pin = 94, .mux = 0, },
+			{ .base = 0x54006a00, .pin = 96, .mux = 0, },
+			{ .base = 0x54006b00, .pin = 98, .mux = 0, },
+		},
+		.clk_enable = uniphier_pxs3_clk_enable_uart,
+	},
 };
 
-static const struct uniphier_uart_info *uniphier_get_uart_info(unsigned int id)
-{
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(uniphier_uart_info); i++) {
-		if (uniphier_uart_info[i].soc_id == id)
-			return &uniphier_uart_info[i];
-	}
-
-	return NULL;
-}
-
-int uniphier_console_setup(unsigned int soc_id,
+int uniphier_console_setup(unsigned int soc,
 			   const struct uniphier_console_data *con)
 {
 	const struct uniphier_uart_info *info;
@@ -68,10 +63,8 @@ int uniphier_console_setup(unsigned int soc_id,
 	if (con->uart_port >= UNIPHIER_NR_UART_PORTS)
 		return -EINVAL;
 
-	info = uniphier_get_uart_info(soc_id);
-	if (!info)
-		return -EINVAL;
-
+	assert(soc < ARRAY_SIZE(uniphier_uart_info));
+	info = &uniphier_uart_info[soc];
 	port = &info->uart_port[con->uart_port];
 
 	uniphier_pinctrl_set_mux(port->pin, port->mux);

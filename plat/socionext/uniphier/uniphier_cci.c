@@ -33,12 +33,20 @@
 #include <plat_uniphier.h>
 #include <utils.h>
 
-#define CCI500_BASE		0x5FD00000
+#define UNIPHIER_CCI500_BASE	0x5FD00000
 
 static const int cci_map[] = {
 	0,
 	1,
 };
+
+int uniphier_cci_init(void) {
+
+
+
+
+}
+
 
 /******************************************************************************
  * Helper function to initialize ARM CCI driver.

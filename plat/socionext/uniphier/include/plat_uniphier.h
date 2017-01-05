@@ -34,8 +34,10 @@
 #include <stdint.h>
 #include <types.h>
 
-#define UNIPHIER_LD11_ID			0x31
-#define UNIPHIER_LD20_ID			0x32
+#define UNIPHIER_SOC_LD11		0
+#define UNIPHIER_SOC_LD20		1
+#define UNIPHIER_SOC_PXS3		2
+#define UNIPHIER_SOC_UNKNOWN		0xffffffff
 
 /* useful macros */
 #define SZ_1M				0x00100000
@@ -103,6 +105,8 @@ void uniphier_ld11_clk_enable_uart(void);
 void uniphier_ld11_clk_enable_dram(void);
 void uniphier_ld20_clk_enable_uart(void);
 void uniphier_ld20_clk_enable_dram(void);
+void uniphier_pxs3_clk_enable_uart(void);
+void uniphier_pxs3_clk_enable_dram(void);
 
 int uniphier_memconf_2ch_init(const struct uniphier_dram_data *dram);
 int uniphier_memconf_3ch_init(const struct uniphier_dram_data *dram);
@@ -125,6 +129,15 @@ static inline int uniphier_ld20_umc_init(const struct uniphier_dram_data *dram)
 }
 #endif
 
+#ifdef CONFIG_UNIPHIER_PXS3
+int uniphier_pxs3_umc_init(const struct uniphier_dram_data *dram);
+#else
+static inline int uniphier_pxs3_umc_init(const struct uniphier_dram_data *dram)
+{
+	return -ENOTSUP;
+}
+#endif
+
 #define UNIPHIER_BOOT_DEVICE_EMMC	0
 #define UNIPHIER_BOOT_DEVICE_NAND	1
 #define UNIPHIER_BOOT_DEVICE_NOR	2
@@ -142,25 +155,25 @@ struct mmap_region;
 void uniphier_mmap_setup(uintptr_t total_base, size_t total_size,
 			 const struct mmap_region *mmap);
 
-#ifdef CONFIG_UNIPHIER_LD20
-void plat_uniphier_cci_init(void);
-void plat_uniphier_cci_enable(void);
-void plat_uniphier_cci_disable(void);
+#if defined(CONFIG_UNIPHIER_LD20)
+void uniphier_cci_init(void);
+void uniphier_cci_enable(void);
+void uniphier_cci_disable(void);
 #else
-static inline void plat_uniphier_cci_init(void)
+static inline void uniphier_cci_init(void)
 {
 }
-static inline void plat_uniphier_cci_enable(void)
+static inline void uniphier_cci_enable(void)
 {
 }
-static inline void plat_uniphier_cci_disable(void)
+static inline void uniphier_cci_disable(void)
 {
 }
 #endif
 
 /* GIC */
-void plat_uniphier_gic_driver_init(void);
-void plat_uniphier_gic_init(void);
+void uniphier_gic_driver_init(unsigned int soc);
+void uniphier_gic_init(void);
 void plat_arm_gic_cpuif_enable(void);
 void plat_uniphier_gic_cpuif_disable(void);
 void plat_uniphier_gic_pcpu_init(void);

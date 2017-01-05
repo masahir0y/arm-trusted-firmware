@@ -42,6 +42,7 @@ FIP_ALIGN			:= 512
 BL1_PREPAD			:= 4096
 CONFIG_UNIPHIER_LD11		:= y
 CONFIG_UNIPHIER_LD20		:= y
+CONFIG_UNIPHIER_PXS3		:= y
 
 $(eval $(call add_define,BL1_PREPAD))
 
@@ -51,6 +52,10 @@ endif
 
 ifeq ($(CONFIG_UNIPHIER_LD20),y)
 $(eval $(call add_define,CONFIG_UNIPHIER_LD20))
+endif
+
+ifeq ($(CONFIG_UNIPHIER_PXS3),y)
+$(eval $(call add_define,CONFIG_UNIPHIER_PXS3))
 endif
 
 PLAT_PATH			:= plat/socionext/uniphier
@@ -82,6 +87,7 @@ common-y			+= $(PLAT_PATH)/uniphier_soc_info.c
 # BL1 sources
 bl1-$(CONFIG_UNIPHIER_LD11)	+= lib/cpus/aarch64/cortex_a53.S
 bl1-$(CONFIG_UNIPHIER_LD20)	+= lib/cpus/aarch64/cortex_a72.S
+bl1-$(CONFIG_UNIPHIER_PXS3)	+= lib/cpus/aarch64/cortex_a53.S
 bl1-y				+= plat/common/aarch64/platform_up_stack.S
 bl1-y				+= $(PLAT_PATH)/uniphier_bl1_helpers.S
 bl1-y				+= $(PLAT_PATH)/uniphier_bl1_setup.c
@@ -90,6 +96,7 @@ bl1-y				+= $(PLAT_PATH)/uniphier_soc_setup.c
 bl1-y				+= $(PLAT_PATH)/dram/memconf.c
 bl1-$(CONFIG_UNIPHIER_LD11)	+= $(PLAT_PATH)/dram/umc_ld11.c
 bl1-$(CONFIG_UNIPHIER_LD20)	+= $(PLAT_PATH)/dram/umc_ld20.c
+bl1-$(CONFIG_UNIPHIER_PXS3)	+= $(PLAT_PATH)/dram/umc_pxs3.c
 bl1-y				+= $(io-y)
 
 # BL2 sources
@@ -128,6 +135,7 @@ BL31_SOURCES 			:= $(sort $(bl31-y))
 
 param-$(CONFIG_UNIPHIER_LD11)	+= ld11*.mk
 param-$(CONFIG_UNIPHIER_LD20)	+= ld20*.mk ld21*.mk ld22*.mk
+param-$(CONFIG_UNIPHIER_PXS3)	+= pxs3*.mk
 
 BOARD_PARAMS	:=  $(wildcard $(addprefix $(PLAT_PATH)/board_params/, $(param-y)))
 

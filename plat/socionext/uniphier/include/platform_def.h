@@ -90,33 +90,6 @@
 #define PLAT_UNIPHIER_GICR_BASE			0x5fe80000
 #endif
 
-#define ARM_IRQ_SEC_PHY_TIMER		29
-
-#define ARM_IRQ_SEC_SGI_0		8
-#define ARM_IRQ_SEC_SGI_1		9
-#define ARM_IRQ_SEC_SGI_2		10
-#define ARM_IRQ_SEC_SGI_3		11
-#define ARM_IRQ_SEC_SGI_4		12
-#define ARM_IRQ_SEC_SGI_5		13
-#define ARM_IRQ_SEC_SGI_6		14
-#define ARM_IRQ_SEC_SGI_7		15
-
-/*
- * Define a list of Group 1 Secure and Group 0 interrupts as per GICv3
- * terminology. On a GICv2 system or mode, the lists will be merged and treated
- * as Group 0 interrupts.
- */
-#define PLAT_UNIPHIER_G1S_IRQS		ARM_IRQ_SEC_PHY_TIMER,		\
-					ARM_IRQ_SEC_SGI_1,		\
-					ARM_IRQ_SEC_SGI_2,		\
-					ARM_IRQ_SEC_SGI_3,		\
-					ARM_IRQ_SEC_SGI_4,		\
-					ARM_IRQ_SEC_SGI_5,		\
-					ARM_IRQ_SEC_SGI_7
-
-#define PLAT_UNIPHIER_G0_IRQS		ARM_IRQ_SEC_SGI_0,		\
-					ARM_IRQ_SEC_SGI_6
-
 /* Console */
 #define PLAT_UNIPHIER_BOOT_UART_BASE		0x54006800
 #define PLAT_UNIPHIER_BOOT_UART_CLK_IN_HZ	58820000
