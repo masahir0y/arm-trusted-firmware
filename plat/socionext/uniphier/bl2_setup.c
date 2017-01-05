@@ -2,9 +2,10 @@
 #include <bl_common.h>
 #include <debug.h>
 #include <desc_image_load.h>
-#include <plat_uniphier.h>
 #include <platform_def.h>
 #include <xlat_tables.h>
+
+#include "uniphier.h"
 
 static struct uniphier_board_data uniphier_board_data;
 
@@ -17,11 +18,9 @@ void bl2_early_platform_setup(meminfo_t *mem_layout)
 
 	uniphier_get_board_data(&uniphier_board_data);
 
-	uniphier_console_setup(uniphier_board_data.soc_id,
-			       &uniphier_board_data.boot_console);
+	uniphier_console_setup(&uniphier_board_data.boot_console);
 
-	/* Initialise the IO layer and register platform IO devices */
-	uniphier_io_setup(uniphier_board_data.soc_id);
+	uniphier_io_setup();
 }
 
 static const struct mmap_region uniphier_bl2_mmap[] = {

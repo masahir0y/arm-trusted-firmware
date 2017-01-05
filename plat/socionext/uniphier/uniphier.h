@@ -1,43 +1,9 @@
-/*
- * Copyright (c) 2015-2016, ARM Limited and Contributors. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * Redistributions of source code must retain the above copyright notice, this
- * list of conditions and the following disclaimer.
- *
- * Redistributions in binary form must reproduce the above copyright notice,
- * this list of conditions and the following disclaimer in the documentation
- * and/or other materials provided with the distribution.
- *
- * Neither the name of ARM nor the names of its contributors may be used
- * to endorse or promote products derived from this software without specific
- * prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- */
-#ifndef __PLAT_UNIPHIER_H__
-#define __PLAT_UNIPHIER_H__
+#ifndef __UNIPHIER_H__
+#define __UNIPHIER_H__
 
 #include <errno.h>
 #include <stdint.h>
 #include <types.h>
-
-#define UNIPHIER_SOC_LD11		0
-#define UNIPHIER_SOC_LD20		1
-#define UNIPHIER_SOC_PXS3		2
-#define UNIPHIER_SOC_UNKNOWN		0xffffffff
 
 /* useful macros */
 #define SZ_1M				0x00100000
@@ -64,7 +30,6 @@ struct uniphier_console_data {
 #define UNIPHIER_MAX_BOARD_NAME_LEN	32
 
 struct uniphier_board_data {
-	unsigned int soc_id;
 	unsigned char board_name[UNIPHIER_MAX_BOARD_NAME_LEN];
 	struct uniphier_console_data boot_console;
 	struct uniphier_console_data runtime_console;
@@ -91,13 +56,9 @@ void uniphier_get_dram_data(struct uniphier_dram_data *dram);
 void uniphier_show_board_data(const struct uniphier_board_data *bd);
 int uniphier_show_dram_data(const struct uniphier_dram_data *dram);
 
-unsigned int uniphier_get_soc_id(void);
+int uniphier_console_setup(const struct uniphier_console_data *con);
 
-int uniphier_console_setup(unsigned int soc_id,
-			   const struct uniphier_console_data *con);
-
-int uniphier_soc_setup(unsigned int soc_id,
-		       const struct uniphier_dram_data *dram);
+int uniphier_dram_setup(const struct uniphier_dram_data *dram);
 
 void uniphier_pinctrl_set_mux(unsigned int pin, unsigned int mux);
 
@@ -143,13 +104,13 @@ static inline int uniphier_pxs3_umc_init(const struct uniphier_dram_data *dram)
 #define UNIPHIER_BOOT_DEVICE_NOR	2
 #define UNIPHIER_BOOT_DEVICE_USB	3
 
-int uniphier_get_boot_device(unsigned int soc_id);
+int uniphier_get_boot_device(void);
 
-int uniphier_rom_emmc_init(unsigned int soc_id, uintptr_t *block_dev_spec);
-int uniphier_rom_nand_init(unsigned int soc_id, uintptr_t *block_dev_spec);
-int uniphier_rom_usb_init(unsigned int soc_id, uintptr_t *block_dev_spec);
+int uniphier_rom_emmc_init(uintptr_t *block_dev_spec);
+int uniphier_rom_nand_init(uintptr_t *block_dev_spec);
+int uniphier_rom_usb_init(uintptr_t *block_dev_spec);
 
-int uniphier_io_setup(unsigned int soc_id);
+int uniphier_io_setup(void);
 
 struct mmap_region;
 void uniphier_mmap_setup(uintptr_t total_base, size_t total_size,
@@ -172,12 +133,12 @@ static inline void uniphier_cci_disable(void)
 #endif
 
 /* GIC */
-void uniphier_gic_driver_init(unsigned int soc);
+void uniphier_gic_driver_init();
 void uniphier_gic_init(void);
-void plat_arm_gic_cpuif_enable(void);
-void plat_uniphier_gic_cpuif_disable(void);
-void plat_uniphier_gic_pcpu_init(void);
+void uniphier_gic_cpuif_enable(void);
+void uniphier_gic_cpuif_disable(void);
+void uniphier_gic_pcpu_init(void);
 
 unsigned int plat_uniphier_calc_core_pos(u_register_t mpidr);
 
-#endif /* __PLAT_UNIPHIER_H__ */
+#endif /* __UNIPHIER_H__ */

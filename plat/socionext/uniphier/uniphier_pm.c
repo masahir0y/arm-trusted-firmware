@@ -31,8 +31,9 @@
 #include <arch_helpers.h>
 #include <debug.h>
 #include <mmio.h>
-#include <plat_uniphier.h>
 #include <psci.h>
+
+#include "uniphier.h"
 
 #define UNIPHIER_ROM_RSV0	0x59801200
 
@@ -70,10 +71,10 @@ int uniphier_pwr_domain_on(u_register_t mpidr)
 void uniphier_pwr_domain_on_finish(const psci_power_state_t *target_state)
 {
 
-	plat_uniphier_gic_pcpu_init();
-	plat_arm_gic_cpuif_enable();
+	uniphier_gic_pcpu_init();
+	uniphier_gic_cpuif_enable();
 
-	plat_uniphier_cci_enable();
+	uniphier_cci_enable();
 }
 
 static void __dead2 uniphier_system_reset(void)

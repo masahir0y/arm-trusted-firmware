@@ -30,8 +30,9 @@
 
 #include <arch_helpers.h>
 #include <cci.h>
-#include <plat_uniphier.h>
 #include <utils.h>
+
+#include "uniphier.h"
 
 #define UNIPHIER_CCI500_BASE	0x5FD00000
 
@@ -40,55 +41,17 @@ static const int cci_map[] = {
 	1,
 };
 
-int uniphier_cci_init(void) {
-
-
-
-
+void uniphier_cci_init(void)
+{
+	cci_init(UNIPHIER_CCI500_BASE, cci_map, ARRAY_SIZE(cci_map));
 }
 
-
-/******************************************************************************
- * Helper function to initialize ARM CCI driver.
- *****************************************************************************/
-void plat_uniphier_cci_init(void)
+void uniphier_cci_enable(void)
 {
-	switch (uniphier_get_soc_id()) {
-	case UNIPHIER_LD20_ID:
-		cci_init(CCI500_BASE, cci_map, ARRAY_SIZE(cci_map));
-		break;
-	default:
-		/* no CCI */
-		break;
-	}
+	cci_enable_snoop_dvm_reqs(MPIDR_AFFLVL1_VAL(read_mpidr_el1()));
 }
 
-/******************************************************************************
- * Helper function to place current master into coherency
- *****************************************************************************/
-void plat_uniphier_cci_enable(void)
+void uniphier_cci_disable(void)
 {
-	switch (uniphier_get_soc_id()) {
-	case UNIPHIER_LD20_ID:
-		cci_enable_snoop_dvm_reqs(MPIDR_AFFLVL1_VAL(read_mpidr_el1()));
-		break;
-	default:
-		/* no CCI */
-		break;
-	}
-}
-
-/******************************************************************************
- * Helper function to remove current master from coherency
- *****************************************************************************/
-void plat_uniphier_cci_disable(void)
-{
-	switch (uniphier_get_soc_id()) {
-	case UNIPHIER_LD20_ID:
-		cci_disable_snoop_dvm_reqs(MPIDR_AFFLVL1_VAL(read_mpidr_el1()));
-		break;
-	default:
-		/* no CCI */
-		break;
-	}
+	cci_disable_snoop_dvm_reqs(MPIDR_AFFLVL1_VAL(read_mpidr_el1()));
 }

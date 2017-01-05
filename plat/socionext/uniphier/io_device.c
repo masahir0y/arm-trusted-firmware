@@ -5,10 +5,11 @@
 #include <io/io_driver.h>
 #include <io/io_fip.h>
 #include <io/io_memmap.h>
-#include <plat_uniphier.h>
 #include <platform_def.h>
 #include <types.h>
 #include <utils.h>
+
+#include "uniphier.h"
 
 static const io_dev_connector_t *uniphier_fip_dev_con;
 static uintptr_t uniphier_fip_dev_handle;
@@ -109,66 +110,66 @@ static int uniphier_io_fip_setup(void)
 	return io_dev_open(uniphier_fip_dev_con, 0, &uniphier_fip_dev_handle);
 }
 
-static int uniphier_io_emmc_setup(unsigned int soc_id)
+static int uniphier_io_emmc_setup(void)
 {
 	uintptr_t block_dev_spec;
 	int ret;
 
-	ret = uniphier_rom_emmc_init(soc_id, &block_dev_spec);
+	ret = uniphier_rom_emmc_init(&block_dev_spec);
 	if (ret)
 		return ret;
 
 	return uniphier_io_block_setup(0x20000, block_dev_spec);
 }
 
-static int uniphier_io_nand_setup(unsigned int soc_id)
+static int uniphier_io_nand_setup(void)
 {
 	uintptr_t block_dev_spec;
 	int ret;
 
-	ret = uniphier_rom_nand_init(soc_id, &block_dev_spec);
+	ret = uniphier_rom_nand_init(&block_dev_spec);
 	if (ret)
 		return ret;
 
 	return uniphier_io_block_setup(0x20000, block_dev_spec);
 }
 
-static int uniphier_io_nor_setup(unsigned int soc_id)
+static int uniphier_io_nor_setup(void)
 {
 	return uniphier_io_memmap_setup(0x80000);
 }
 
-static int uniphier_io_usb_setup(unsigned int soc_id)
+static int uniphier_io_usb_setup(void)
 {
 	uintptr_t block_dev_spec;
 	int ret;
 
-	ret = uniphier_rom_usb_init(soc_id, &block_dev_spec);
+	ret = uniphier_rom_usb_init(&block_dev_spec);
 	if (ret)
 		return ret;
 
 	return uniphier_io_block_setup(0x20000, block_dev_spec);
 }
 
-static int (* const uniphier_io_setup_table[])(unsigned int) = {
+static int (* const uniphier_io_setup_table[])(void) = {
 	[UNIPHIER_BOOT_DEVICE_EMMC] = uniphier_io_emmc_setup,
 	[UNIPHIER_BOOT_DEVICE_NAND] = uniphier_io_nand_setup,
 	[UNIPHIER_BOOT_DEVICE_NOR] = uniphier_io_nor_setup,
 	[UNIPHIER_BOOT_DEVICE_USB] = uniphier_io_usb_setup,
 };
 
-int uniphier_io_setup(unsigned int soc_id)
+int uniphier_io_setup(void)
 {
-	int (*io_setup)(unsigned int soc_id);
+	int (*io_setup)(void);
 	int boot_dev;
 	int ret;
 
-	boot_dev = uniphier_get_boot_device(soc_id);
+	boot_dev = uniphier_get_boot_device();
 	if (boot_dev < 0)
 		return boot_dev;
 
 	io_setup = uniphier_io_setup_table[boot_dev];
-	ret = io_setup(soc_id);
+	ret = io_setup();
 	if (ret)
 		return ret;
 

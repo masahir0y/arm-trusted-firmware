@@ -34,9 +34,10 @@
 #include <console.h>
 #include <debug.h>
 #include <mmio.h>
-#include <plat_uniphier.h>
 #include <platform_def.h>
 #include <xlat_tables.h>
+
+#include "uniphier.h"
 
 static entry_point_info_t bl32_image_ep_info;
 static entry_point_info_t bl33_image_ep_info;
@@ -54,8 +55,7 @@ void bl31_early_platform_setup(bl_params_t *params_from_bl2,
 	bl_params_node_t *bl_params = params_from_bl2->head;
 	uniphier_board_data = *bd;
 
-	uniphier_console_setup(uniphier_board_data.soc_id,
-			       &uniphier_board_data.boot_console);
+	uniphier_console_setup(&uniphier_board_data.boot_console);
 
 	while (bl_params) {
 		if (bl_params->image_id == BL32_IMAGE_ID)
@@ -74,14 +74,14 @@ void bl31_early_platform_setup(bl_params_t *params_from_bl2,
 	 * Initialize Interconnect for this cluster during cold boot.
 	 * No need for locks as no other CPU is active.
 	 */
-	plat_uniphier_cci_init();
+	uniphier_cci_init();
 
 	/*
 	 * Enable Interconnect coherency for the primary CPU's cluster.
 	 * Platform specific PSCI code will enable coherency for other
 	 * clusters.
 	 */
-	plat_uniphier_cci_enable();
+	uniphier_cci_enable();
 }
 
 #define UNIPHIER_SYS_CNTCTL_BASE	0x60E00000
@@ -89,7 +89,7 @@ void bl31_early_platform_setup(bl_params_t *params_from_bl2,
 void bl31_platform_setup(void)
 {
 	/* Initialize the GIC driver, cpu and distributor interfaces */
-	uniphier_gic_driver_init(uniphier_board_data.soc_id);
+	uniphier_gic_driver_init();
 	uniphier_gic_init();
 
 	/* Enable and initialize the System level generic timer */
@@ -107,6 +107,5 @@ void bl31_plat_runtime_setup(void)
 {
 	console_uninit();
 
-	uniphier_console_setup(uniphier_board_data.soc_id,
-			       &uniphier_board_data.runtime_console);
+	uniphier_console_setup(&uniphier_board_data.runtime_console);
 }

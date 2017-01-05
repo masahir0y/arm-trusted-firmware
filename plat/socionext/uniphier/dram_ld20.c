@@ -9,10 +9,11 @@
 #include <assert.h>
 #include <debug.h>
 #include <mmio.h>
-#include <plat_uniphier.h>
 
-#include "ddruqphy-regs.h"
-#include "umc-regs.h"
+#include "ddruqphy_regs.h"
+#include "dram_setup.h"
+#include "umc_regs.h"
+#include "uniphier.h"
 
 #define DIV_ROUND_CLOSEST(x, divisor)	\
 	(((x) + (divisor) / 2) / (divisor))
@@ -671,7 +672,7 @@ static void um_init(uintptr_t um_base)
 	mmio_write_32(um_base + UMC_MBUS10, 0x00000001);
 }
 
-int uniphier_ld20_umc_init(const struct uniphier_dram_data *dram)
+static int dram_init(const struct uniphier_dram_data *dram)
 {
 	uintptr_t um_base = 0x5b600000;
 	uintptr_t umc_ch_base = 0x5b800000;
@@ -719,3 +720,10 @@ int uniphier_ld20_umc_init(const struct uniphier_dram_data *dram)
 
 	return 0;
 }
+
+struct uniphier_dram_setup_info uniphier_dram_setup_info = {
+	.dram_init = dram_init,
+	.memconf_init = uniphier_memconf_3ch_init,
+	.rst_deassert_bits = 0x00010707,
+	.clk_enable_bits = 0x00010007,
+};

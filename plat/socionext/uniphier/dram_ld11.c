@@ -4,10 +4,11 @@
 
 #include <debug.h>
 #include <mmio.h>
-#include <plat_uniphier.h>
 
-#include "ddrphy-regs.h"
-#include "umc-regs.h"
+#include "ddrphy_regs.h"
+#include "dram_setup.h"
+#include "umc_regs.h"
+#include "uniphier.h"
 
 #define clamp(val, lo, hi) min(max(val, lo), hi)
 
@@ -436,7 +437,7 @@ static void um_init(uintptr_t um_base)
 	mmio_write_32(um_base + UMC_DMDRST, 0x00000001);
 }
 
-int uniphier_ld11_umc_init(const struct uniphier_dram_data *dram)
+static int dram_init(const struct uniphier_dram_data *dram)
 {
 	uintptr_t um_base = 0x5B800000;
 	uintptr_t umc_ch_base = 0x5BC00000;
@@ -489,3 +490,10 @@ int uniphier_ld11_umc_init(const struct uniphier_dram_data *dram)
 
 	return 0;
 }
+
+struct uniphier_dram_setup_info uniphier_dram_setup_info = {
+	.dram_init = dram_init,
+	.memconf_init = uniphier_memconf_2ch_init,
+	.rst_deassert_bits = 0x00000003,
+	.clk_enable_bits = 0x00000003,
+};

@@ -1,7 +1,8 @@
 
 #include <debug.h>
 #include <mmio.h>
-#include <plat_uniphier.h>
+
+#include "uniphier.h"
 
 #define UNIPHIER_MEMCONF		0x5f800400
 

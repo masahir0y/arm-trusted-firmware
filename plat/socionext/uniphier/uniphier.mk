@@ -40,23 +40,7 @@ override USE_COHERENT_MEM	:= 1
 FIP_ALIGN			:= 512
 
 BL1_PREPAD			:= 4096
-CONFIG_UNIPHIER_LD11		:= y
-CONFIG_UNIPHIER_LD20		:= y
-CONFIG_UNIPHIER_PXS3		:= y
-
 $(eval $(call add_define,BL1_PREPAD))
-
-ifeq ($(CONFIG_UNIPHIER_LD11),y)
-$(eval $(call add_define,CONFIG_UNIPHIER_LD11))
-endif
-
-ifeq ($(CONFIG_UNIPHIER_LD20),y)
-$(eval $(call add_define,CONFIG_UNIPHIER_LD20))
-endif
-
-ifeq ($(CONFIG_UNIPHIER_PXS3),y)
-$(eval $(call add_define,CONFIG_UNIPHIER_PXS3))
-endif
 
 PLAT_PATH			:= plat/socionext/uniphier
 PLAT_INCLUDES			:= -I$(PLAT_PATH)/include
@@ -66,43 +50,50 @@ io-y				+= drivers/io/io_block.c
 io-y				+= drivers/io/io_fip.c
 io-y				+= drivers/io/io_memmap.c
 io-y				+= drivers/io/io_storage.c
-io-y				+= $(PLAT_PATH)/uniphier_boot_device.c
-io-y				+= $(PLAT_PATH)/uniphier_io_storage.c
-io-y				+= $(PLAT_PATH)/uniphier_rom_api.c
+io-y				+= $(PLAT_PATH)/boot_device.c
+io-$(CONFIG_UNIPHIER_LD11)	+= $(PLAT_PATH)/boot_device_ld11.c
+io-$(CONFIG_UNIPHIER_LD20)	+= $(PLAT_PATH)/boot_device_ld20.c
+io-$(CONFIG_UNIPHIER_PXS3)	+= $(PLAT_PATH)/boot_device_pxs3.c
+io-y				+= $(PLAT_PATH)/io_device.c
+io-y				+= $(PLAT_PATH)/rom_api.c
+io-$(CONFIG_UNIPHIER_LD11)	+= $(PLAT_PATH)/rom_api_ld11.c
+io-$(CONFIG_UNIPHIER_LD20)	+= $(PLAT_PATH)/rom_api_ld20.c
+io-$(CONFIG_UNIPHIER_PXS3)	+= $(PLAT_PATH)/rom_api_pxs3.c
 
 # xlat sources for BL2, BL31
 xlat-y				+= lib/xlat_tables/aarch64/xlat_tables.c
 xlat-y				+= lib/xlat_tables/xlat_tables_common.c
-xlat-y				+= $(PLAT_PATH)/uniphier_xlat_setup.c
+xlat-y				+= $(PLAT_PATH)/xlat_setup.c
 
 # common sources for BL1, BL2, BL31
 common-y			+= drivers/console/aarch64/console.S
-common-y			+= $(PLAT_PATH)/uniphier_clk.c
 common-y			+= $(PLAT_PATH)/uniphier_console.S
-common-y			+= $(PLAT_PATH)/uniphier_console_setup.c
+common-y			+= $(PLAT_PATH)/console_setup.c
 common-y			+= $(PLAT_PATH)/uniphier_helpers.S
 common-y			+= $(PLAT_PATH)/uniphier_pinctrl.c
-common-y			+= $(PLAT_PATH)/uniphier_soc_info.c
+common-$(CONFIG_UNIPHIER_LD11)	+= $(PLAT_PATH)/uart_ld11_ld20.c
+common-$(CONFIG_UNIPHIER_LD20)	+= $(PLAT_PATH)/uart_ld11_ld20.c
+common-$(CONFIG_UNIPHIER_PXS3)	+= $(PLAT_PATH)/uart_pxs3.c
 
 # BL1 sources
 bl1-$(CONFIG_UNIPHIER_LD11)	+= lib/cpus/aarch64/cortex_a53.S
 bl1-$(CONFIG_UNIPHIER_LD20)	+= lib/cpus/aarch64/cortex_a72.S
 bl1-$(CONFIG_UNIPHIER_PXS3)	+= lib/cpus/aarch64/cortex_a53.S
 bl1-y				+= plat/common/aarch64/platform_up_stack.S
-bl1-y				+= $(PLAT_PATH)/uniphier_bl1_helpers.S
-bl1-y				+= $(PLAT_PATH)/uniphier_bl1_setup.c
+bl1-y				+= $(PLAT_PATH)/bl1_helpers.S
+bl1-y				+= $(PLAT_PATH)/bl1_setup.c
 bl1-y				+= $(PLAT_PATH)/uniphier_board_param.c
-bl1-y				+= $(PLAT_PATH)/uniphier_soc_setup.c
-bl1-y				+= $(PLAT_PATH)/dram/memconf.c
-bl1-$(CONFIG_UNIPHIER_LD11)	+= $(PLAT_PATH)/dram/umc_ld11.c
-bl1-$(CONFIG_UNIPHIER_LD20)	+= $(PLAT_PATH)/dram/umc_ld20.c
-bl1-$(CONFIG_UNIPHIER_PXS3)	+= $(PLAT_PATH)/dram/umc_pxs3.c
+bl1-y				+= $(PLAT_PATH)/dram_setup.c
+bl1-$(CONFIG_UNIPHIER_LD11)	+= $(PLAT_PATH)/dram_ld11.c
+bl1-$(CONFIG_UNIPHIER_LD20)	+= $(PLAT_PATH)/dram_ld20.c
+bl1-$(CONFIG_UNIPHIER_PXS3)	+= $(PLAT_PATH)/dram_pxs3.c
+bl1-y				+= $(PLAT_PATH)/memconf.c
 bl1-y				+= $(io-y)
 
 # BL2 sources
 bl2-y				+= plat/common/aarch64/platform_up_stack.S
 bl2-y				+= common/desc_image_load.c
-bl2-y				+= $(PLAT_PATH)/uniphier_bl2_setup.c
+bl2-y				+= $(PLAT_PATH)/bl2_setup.c
 bl2-y				+= $(PLAT_PATH)/uniphier_board_param.c
 bl2-y				+= $(PLAT_PATH)/uniphier_image_desc.c
 bl2-y				+= $(io-y)
@@ -113,13 +104,15 @@ bl31-$(CONFIG_UNIPHIER_LD20)	+= drivers/arm/cci/cci.c
 bl31-y				+= drivers/arm/gic/common/gic_common.c
 bl31-y				+= drivers/arm/gic/v3/gicv3_helpers.c
 bl31-y				+= drivers/arm/gic/v3/gicv3_main.c
-bl31-y				+= lib/cpus/aarch64/cortex_a53.S
-bl31-y				+= lib/cpus/aarch64/cortex_a72.S
+bl31-$(CONFIG_UNIPHIER_LD11)	+= lib/cpus/aarch64/cortex_a53.S
+bl31-$(CONFIG_UNIPHIER_LD20)	+= lib/cpus/aarch64/cortex_a53.S
+bl31-$(CONFIG_UNIPHIER_PXS3)	+= lib/cpus/aarch64/cortex_a53.S
+bl31-$(CONFIG_UNIPHIER_LD20)	+= lib/cpus/aarch64/cortex_a72.S
 bl31-y				+= plat/common/aarch64/plat_common.c
 bl31-y				+= plat/common/aarch64/platform_mp_stack.S
 bl31-y				+= plat/common/plat_gicv3.c
 bl31-y				+= plat/common/plat_psci_common.c
-bl31-y				+= $(PLAT_PATH)/uniphier_bl31_setup.c
+bl31-y				+= $(PLAT_PATH)/bl31_setup.c
 bl31-$(CONFIG_UNIPHIER_LD20)	+= $(PLAT_PATH)/uniphier_cci.c
 bl31-y				+= $(PLAT_PATH)/uniphier_gicv3.c
 bl31-y				+= $(PLAT_PATH)/uniphier_pm.c

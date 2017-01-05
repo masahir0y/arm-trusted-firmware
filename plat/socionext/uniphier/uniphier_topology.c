@@ -29,10 +29,10 @@
  */
 
 #include <arch.h>
-#include <plat_uniphier.h>
 #include <platform.h>
 
-/* The UniPhier power domain tree descriptor */
+#include "uniphier.h"
+
 static unsigned char uniphier_power_domain_tree_desc[UNIPHIER_CLUSTER_COUNT + 1];
 
 const unsigned char *plat_get_power_domain_tree_desc(void)

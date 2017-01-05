@@ -2,10 +2,11 @@
 #include <arch_helpers.h>
 #include <io/io_block.h>
 #include <mmio.h>
-#include <plat_uniphier.h>
 #include <platform_def.h>
 #include <sys/types.h>
-#include <utils.h>
+
+#include "rom_api.h"
+#include "uniphier.h"
 
 #define UNIPHIER_ROM_BUFFER_BASE	(BL31_LIMIT)
 #define UNIPHIER_ROM_BUFFER_SIZE	(SZ_4M)
@@ -15,46 +16,6 @@
 static int (*uniphier_rom_emmc_load_image)(uint32_t block_or_byte, uintptr_t buf,
 					  uint32_t block_cnt);
 static int uniphier_rom_emmc_is_over_2gb;
-
-struct uniphier_rom_func_table {
-	uintptr_t emmc_is_over_2gb;
-	uintptr_t emmc_set_part_access;
-	uintptr_t emmc_clear_part_access;
-	uintptr_t emmc_send_cmd;
-	uintptr_t emmc_load_image;
-	uintptr_t nand_load_image;
-	uintptr_t usb_load_image;
-};
-
-static const struct uniphier_rom_func_table uniphier_rom_func_table[] = {
-	[UNIPHIER_SOC_LD11] = {
-		.emmc_is_over_2gb = 0x1b68,
-		.emmc_set_part_access = 0x1c38,
-		.emmc_clear_part_access = 0x1cd0,
-		.emmc_send_cmd = 0x20d8,
-		.emmc_load_image = 0x2e48,
-		.nand_load_image = 0x34f0,
-		.usb_load_image = 0x3958,
-	},
-	[UNIPHIER_SOC_LD20] = {
-		.emmc_is_over_2gb = 0x1ba0,
-		.emmc_set_part_access = 0x1c70,
-		.emmc_clear_part_access = 0x1d10,
-		.emmc_send_cmd = 0x2130,
-		.emmc_load_image = 0x2ef0,
-		.nand_load_image = 0x35d0,
-		.usb_load_image = 0x37f0,
-	},
-	[UNIPHIER_SOC_PXS3] = {
-		.emmc_is_over_2gb = 0,
-		.emmc_set_part_access = 0,
-		.emmc_clear_part_access = 0,
-		.emmc_send_cmd = 0,
-		.emmc_load_image = 0,
-		.nand_load_image = 0,
-		.usb_load_image = 0,
-	},
-};
 
 static size_t uniphier_rom_emmc_read(int lba, uintptr_t buf, size_t size)
 {
@@ -85,8 +46,9 @@ static const struct io_block_dev_spec uniphier_rom_emmc_dev_spec = {
 
 #define UNIPHIER_ROM_SET_PTR(val, ptr)	(val = (__typeof(val))(ptr))
 
-static int __uniphier_rom_emmc_init(const struct uniphier_rom_func_table *funcs)
+static int __uniphier_rom_emmc_init(void)
 {
+	const struct uniphier_rom_func_table *funcs = &uniphier_rom_func_table;
 	const uint32_t rca = 0x1000; /* RCA assigned by Boot ROM */
 	int (*send_cmd)(uint32_t cmd, uint32_t arg);
 	int (*is_over_2gb)(uint32_t rca);
@@ -129,12 +91,11 @@ static int __uniphier_rom_emmc_init(const struct uniphier_rom_func_table *funcs)
 	return 0;
 }
 
-int uniphier_rom_emmc_init(unsigned int soc, uintptr_t *block_dev_spec)
+int uniphier_rom_emmc_init(uintptr_t *block_dev_spec)
 {
 	int ret;
 
-	assert(soc < ARRAY_SIZE(uniphier_rom_func_table));
-	ret = __uniphier_rom_emmc_init(&uniphier_rom_func_table[soc]);
+	ret = __uniphier_rom_emmc_init();
 	if (ret)
 		return ret;
 
@@ -159,14 +120,8 @@ static const struct io_block_dev_spec uniphier_rom_nand_dev_spec = {
 	.block_size = 512,
 };
 
-int uniphier_rom_nand_init(unsigned int soc_id, uintptr_t *block_dev_spec)
+int uniphier_rom_nand_init(uintptr_t *block_dev_spec)
 {
-	const struct uniphier_rom_func_table *funcs;
-
-	funcs = uniphier_get_rom_func_table(soc_id);
-	if (!funcs)
-		return -EINVAL;
-
 	*block_dev_spec = (uintptr_t)&uniphier_rom_nand_dev_spec;
 
 	return 0;
@@ -188,14 +143,8 @@ static const struct io_block_dev_spec uniphier_rom_usb_dev_spec = {
 	.block_size = 512,
 };
 
-int uniphier_rom_usb_init(unsigned int soc_id, uintptr_t *block_dev_spec)
+int uniphier_rom_usb_init(uintptr_t *block_dev_spec)
 {
-	const struct uniphier_rom_func_table *funcs;
-
-	funcs = uniphier_get_rom_func_table(soc_id);
-	if (!funcs)
-		return -EINVAL;
-
 	*block_dev_spec = (uintptr_t)&uniphier_rom_usb_dev_spec;
 
 	return 0;

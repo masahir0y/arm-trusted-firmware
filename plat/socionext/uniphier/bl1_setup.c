@@ -32,9 +32,10 @@
 #include <bl_common.h>
 #include <console.h>
 #include <debug.h>
-#include <plat_uniphier.h>
 #include <platform.h>
 #include <platform_def.h>
+
+#include "uniphier.h"
 
 static struct uniphier_board_data uniphier_board_data;
 static struct uniphier_dram_data uniphier_dram_data;
@@ -43,8 +44,7 @@ void bl1_early_platform_setup(void)
 {
 	uniphier_get_board_data(&uniphier_board_data);
 
-	uniphier_console_setup(uniphier_board_data.soc_id,
-			       &uniphier_board_data.boot_console);
+	uniphier_console_setup(&uniphier_board_data.boot_console);
 }
 
 void bl1_plat_arch_setup(void)
@@ -63,13 +63,13 @@ void bl1_platform_setup(void)
 	if (ret)
 		plat_error_handler(ret);
 
-	ret = uniphier_soc_setup(uniphier_board_data.soc_id, &uniphier_dram_data);
+	ret = uniphier_dram_setup(&uniphier_dram_data);
 	if (ret) {
 		ERROR("failed to setup SoC\n");
 		plat_error_handler(ret);
 	}
 
-	ret = uniphier_io_setup(uniphier_board_data.soc_id);
+	ret = uniphier_io_setup();
 	if (ret) {
 		ERROR("failed to setup io devices\n");
 		plat_error_handler(ret);
