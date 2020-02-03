@@ -51,6 +51,8 @@ unsigned int uniphier_get_soc_id(void)
 		return UNIPHIER_SOC_LD20;
 	case 0x35:
 		return UNIPHIER_SOC_PXS3;
+	case 0x37:
+		return UNIPHIER_SOC_NX1;
 	default:
 		return UNIPHIER_SOC_UNKNOWN;
 	}

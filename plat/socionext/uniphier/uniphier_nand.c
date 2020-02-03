@@ -259,6 +259,7 @@ static const uintptr_t uniphier_nand_base[] = {
 	[UNIPHIER_SOC_LD11] = 0x68000000,
 	[UNIPHIER_SOC_LD20] = 0x68000000,
 	[UNIPHIER_SOC_PXS3] = 0x68000000,
+	/* UNIPHIER_SOC_NX1: No NAND support */
 };
 
 int uniphier_nand_init(unsigned int soc,

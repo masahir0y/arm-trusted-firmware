@@ -38,6 +38,7 @@ static const uintptr_t uniphier_uart_base[] = {
 	[UNIPHIER_SOC_LD11] = 0x54006800,
 	[UNIPHIER_SOC_LD20] = 0x54006800,
 	[UNIPHIER_SOC_PXS3] = 0x54006800,
+	[UNIPHIER_SOC_NX1] = 0x14006800,
 };
 
 /*

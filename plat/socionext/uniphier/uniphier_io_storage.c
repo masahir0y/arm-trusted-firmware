@@ -281,6 +281,7 @@ static const uintptr_t uniphier_ocm_base[] = {
 	[UNIPHIER_SOC_LD11] = 0x30000000,
 	[UNIPHIER_SOC_LD20] = 0x30000000,
 	[UNIPHIER_SOC_PXS3] = 0x30000000,
+	[UNIPHIER_SOC_NX1] = 0x04000000,
 };
 
 static int uniphier_io_rom_api_setup(unsigned int soc)

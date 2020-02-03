@@ -148,6 +148,10 @@ static const struct uniphier_psci_ctrl_base uniphier_psci_ctrl_base[] = {
 		.rom_rsv_base = 0x59801200,
 		.slfrst_base = 0x61843000,
 	},
+	[UNIPHIER_SOC_NX1] = {
+		.rom_rsv_base = 0x19801200,
+		.slfrst_base = 0x11843000,
+	},
 };
 
 void uniphier_psci_init(unsigned int soc)

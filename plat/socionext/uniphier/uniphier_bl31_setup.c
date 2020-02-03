@@ -61,6 +61,7 @@ static const uintptr_t uniphier_cntctl_base[] = {
 	[UNIPHIER_SOC_LD11] = 0x60e00000,
 	[UNIPHIER_SOC_LD20] = 0x60e00000,
 	[UNIPHIER_SOC_PXS3] = 0x60e00000,
+	[UNIPHIER_SOC_NX1] = 0x10e00000,
 };
 
 void bl31_platform_setup(void)

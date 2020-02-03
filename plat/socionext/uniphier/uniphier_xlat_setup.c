@@ -32,6 +32,10 @@ static const struct uniphier_reg_region uniphier_reg_region[] = {
 		.base = 0x50000000UL,
 		.size = 0x20000000UL,
 	},
+	[UNIPHIER_SOC_NX1] = {
+		.base = 0x10000000UL,
+		.size = 0x10000000UL,
+	},
 };
 
 void uniphier_mmap_setup(unsigned int soc)

@@ -84,6 +84,15 @@ static const struct gicv3_driver_data uniphier_gic_driver_data[] = {
 		.rdistif_base_addrs = uniphier_rdistif_base_addrs,
 		.mpidr_to_core_pos = uniphier_mpidr_to_core_pos,
 	},
+	[UNIPHIER_SOC_NX1] = {
+		.gicd_base = 0x1fd00000,
+		.gicr_base = 0x1fd80000,
+		.interrupt_props = uniphier_interrupt_props,
+		.interrupt_props_num = ARRAY_SIZE(uniphier_interrupt_props),
+		.rdistif_num = PLATFORM_CORE_COUNT,
+		.rdistif_base_addrs = uniphier_rdistif_base_addrs,
+		.mpidr_to_core_pos = uniphier_mpidr_to_core_pos,
+	},
 };
 
 void uniphier_gic_driver_init(unsigned int soc)

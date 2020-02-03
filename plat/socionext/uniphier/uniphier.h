@@ -18,6 +18,7 @@ unsigned int uniphier_get_soc_id(void);
 #define UNIPHIER_SOC_LD11		0
 #define UNIPHIER_SOC_LD20		1
 #define UNIPHIER_SOC_PXS3		2
+#define UNIPHIER_SOC_NX1		3
 #define UNIPHIER_SOC_UNKNOWN		0xffffffff
 
 unsigned int uniphier_get_boot_device(unsigned int soc);

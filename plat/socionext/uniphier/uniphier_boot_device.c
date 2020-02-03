@@ -20,6 +20,7 @@ static const uintptr_t uniphier_pinmon_base[] = {
 	[UNIPHIER_SOC_LD11] = 0x5f900100,
 	[UNIPHIER_SOC_LD20] = 0x5f900100,
 	[UNIPHIER_SOC_PXS3] = 0x5f900100,
+	[UNIPHIER_SOC_NX1] = 0x1f900100,
 };
 
 static bool uniphier_ld11_is_usb_boot(uint32_t pinmon)
@@ -112,6 +113,31 @@ static unsigned int uniphier_pxs3_get_boot_device(uint32_t pinmon)
 	return uniphier_pxs3_boot_device_table[boot_sel];
 }
 
+static bool uniphier_nx1_is_sd_boot(uint32_t pinmon)
+{
+	return pinmon & BIT(8);
+}
+
+static const unsigned int uniphier_nx1_boot_device_table[] = {
+	UNIPHIER_BOOT_DEVICE_EMMC,
+	UNIPHIER_BOOT_DEVICE_EMMC,
+	UNIPHIER_BOOT_DEVICE_EMMC,
+	UNIPHIER_BOOT_DEVICE_NOR,
+	UNIPHIER_BOOT_DEVICE_RSV,
+	UNIPHIER_BOOT_DEVICE_RSV,
+	UNIPHIER_BOOT_DEVICE_NOR,
+	UNIPHIER_BOOT_DEVICE_NOR,
+};
+
+static unsigned int uniphier_nx1_get_boot_device(uint32_t pinmon)
+{
+	unsigned int boot_sel = pinmon & 0x7;
+
+	assert(boot_sel < ARRAY_SIZE(uniphier_nx1_boot_device_table));
+
+	return uniphier_nx1_boot_device_table[boot_sel];
+}
+
 struct uniphier_boot_device_info {
 	bool have_boot_swap;
 	bool (*is_sd_boot)(uint32_t pinmon);
@@ -134,6 +160,11 @@ static const struct uniphier_boot_device_info uniphier_boot_device_info[] = {
 		.have_boot_swap = true,
 		.is_usb_boot = uniphier_pxs3_is_usb_boot,
 		.get_boot_device = uniphier_pxs3_get_boot_device,
+	},
+	[UNIPHIER_SOC_NX1] = {
+		.have_boot_swap = false,
+		.is_sd_boot = uniphier_nx1_is_sd_boot,
+		.get_boot_device = uniphier_nx1_get_boot_device,
 	},
 };
 
@@ -167,6 +198,7 @@ static const bool uniphier_have_onchip_scp[] = {
 	[UNIPHIER_SOC_LD11] = true,
 	[UNIPHIER_SOC_LD20] = true,
 	[UNIPHIER_SOC_PXS3] = false,
+	[UNIPHIER_SOC_NX1] = false,
 };
 
 unsigned int uniphier_get_boot_master(unsigned int soc)

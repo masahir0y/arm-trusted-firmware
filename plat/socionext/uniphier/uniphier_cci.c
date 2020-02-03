@@ -54,6 +54,11 @@ static const struct uniphier_cci_ops uniphier_cci_ops_table[] = {
 		.enable = NULL,
 		.disable = NULL,
 	},
+	[UNIPHIER_SOC_NX1] = {
+		.init = NULL,
+		.enable = NULL,
+		.disable = NULL,
+	},
 };
 
 static struct uniphier_cci_ops uniphier_cci_ops;

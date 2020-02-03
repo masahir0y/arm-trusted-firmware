@@ -286,6 +286,7 @@ static const uintptr_t uniphier_emmc_base[] = {
 	[UNIPHIER_SOC_LD11] = 0x5a000200,
 	[UNIPHIER_SOC_LD20] = 0x5a000200,
 	[UNIPHIER_SOC_PXS3] = 0x5a000200,
+	[UNIPHIER_SOC_NX1] = 0x1a000200,
 };
 
 int uniphier_emmc_init(unsigned int soc,
