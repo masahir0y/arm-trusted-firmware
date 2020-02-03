@@ -43,6 +43,8 @@ int uniphier_emmc_init(unsigned int soc,
 		       struct io_block_dev_spec **block_dev_spec);
 int uniphier_nand_init(unsigned int soc,
 		       struct io_block_dev_spec **block_dev_spec);
+int uniphier_sd_init(unsigned int soc,
+		     struct io_block_dev_spec **block_dev_spec);
 int uniphier_usb_init(unsigned int soc,
 		      struct io_block_dev_spec **block_dev_spec);
 

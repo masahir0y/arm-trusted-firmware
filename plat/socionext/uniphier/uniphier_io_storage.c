@@ -313,6 +313,23 @@ static int uniphier_io_rom_api_setup(unsigned int soc)
 	return 0;
 }
 
+static int uniphier_io_sd_setup(unsigned int soc, size_t buffer_offset)
+{
+	struct io_block_dev_spec *block_dev_spec;
+	int ret;
+
+	/* use ROM API for loading images from SD */
+	ret = uniphier_io_rom_api_setup(soc);
+	if (ret)
+		return ret;
+
+	ret = uniphier_sd_init(soc, &block_dev_spec);
+	if (ret)
+		return ret;
+
+	return uniphier_io_block_setup(0x20000, block_dev_spec, buffer_offset);
+}
+
 static int uniphier_io_usb_setup(unsigned int soc, size_t buffer_offset)
 {
 	struct io_block_dev_spec *block_dev_spec;
@@ -334,6 +351,7 @@ static int (* const uniphier_io_setup_table[])(unsigned int, size_t) = {
 	[UNIPHIER_BOOT_DEVICE_EMMC] = uniphier_io_emmc_setup,
 	[UNIPHIER_BOOT_DEVICE_NAND] = uniphier_io_nand_setup,
 	[UNIPHIER_BOOT_DEVICE_NOR] = uniphier_io_nor_setup,
+	[UNIPHIER_BOOT_DEVICE_SD] = uniphier_io_sd_setup,
 	[UNIPHIER_BOOT_DEVICE_USB] = uniphier_io_usb_setup,
 };
 

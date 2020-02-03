@@ -63,6 +63,7 @@ BL2_SOURCES		+=	common/desc_image_load.c		\
 				$(PLAT_PATH)/uniphier_io_storage.c	\
 				$(PLAT_PATH)/uniphier_nand.c		\
 				$(PLAT_PATH)/uniphier_scp.c		\
+				$(PLAT_PATH)/uniphier_sd.c		\
 				$(PLAT_PATH)/uniphier_usb.c
 
 # Include GICv3 driver files
