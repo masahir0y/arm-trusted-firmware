@@ -14,6 +14,8 @@
 
 #include <arch.h>
 
+#include <common/debug.h>
+
 /**********************************************************************
  * Macros which create inline functions to read or write CPU system
  * registers
@@ -560,6 +562,20 @@ static inline uint64_t el_implemented(unsigned int el)
 		unsigned int shift = ID_AA64PFR0_EL1_SHIFT * el;
 
 		return (read_id_aa64pfr0_el1() >> shift) & ID_AA64PFR0_ELX_MASK;
+	}
+}
+
+static inline u_register_t read_sctlr(void)
+{
+	switch (get_current_el_maybe_constant()) {
+	case 1:
+		return read_sctlr_el1();
+	case 2:
+		return read_sctlr_el2();
+	case 3:
+		return read_sctlr_el3();
+	default:
+		panic();
 	}
 }
 

@@ -135,15 +135,7 @@ bool is_mmu_enabled_ctx(const xlat_ctx_t *ctx)
 
 bool is_dcache_enabled(void)
 {
-	unsigned int el = get_current_el_maybe_constant();
-
-	if (el == 1U) {
-		return (read_sctlr_el1() & SCTLR_C_BIT) != 0U;
-	} else if (el == 2U) {
-		return (read_sctlr_el2() & SCTLR_C_BIT) != 0U;
-	} else {
-		return (read_sctlr_el3() & SCTLR_C_BIT) != 0U;
-	}
+	return (read_sctlr() & SCTLR_C_BIT) != 0U;
 }
 
 uint64_t xlat_arch_regime_get_xn_desc(int xlat_regime)

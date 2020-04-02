@@ -99,11 +99,7 @@ void bl1_main(void)
 	/*
 	 * Ensure that MMU/Caches and coherency are turned on
 	 */
-#ifdef __aarch64__
-	val = read_sctlr_el3();
-#else
 	val = read_sctlr();
-#endif
 	assert((val & SCTLR_M_BIT) != 0);
 	assert((val & SCTLR_C_BIT) != 0);
 	assert((val & SCTLR_I_BIT) != 0);
