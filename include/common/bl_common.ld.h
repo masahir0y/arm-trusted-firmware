@@ -101,6 +101,18 @@
 		__DATA_END__ = .;			\
 	}
 
+/*
+ * .rela.dyn needs to come after .data for the read-elf utility to parse
+ * this section correctly. Ensure 8-byte alignment so that the fields of
+ * RELA data structure are aligned.
+ */
+#define RELA_SECTION					\
+	.rela.dyn . : ALIGN(STRUCT_ALIGN) {		\
+		__RELA_START__ = .;			\
+		*(.rela*)				\
+		__RELA_END__ = .;			\
+	}
+
 #define STACK_SECTION					\
 	stacks (NOLOAD) : {				\
 		__STACKS_START__ = .;			\
